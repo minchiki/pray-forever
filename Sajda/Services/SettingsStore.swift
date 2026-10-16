@@ -1,11 +1,12 @@
 import Foundation
 import Combine
+import WidgetKit
 
 /// Хранит настройки и служебное состояние будильника в UserDefaults.
 @MainActor
 final class SettingsStore: ObservableObject {
     private enum Key {
-        static let settings = "sajda.settings.v1"
+        static let settings = SharedStorage.settingsKey
         static let dismissed = "sajda.dismissed.v1"
         static let ringing = "sajda.ringing.v1"
         static let onboarded = "sajda.onboarded.v1"
@@ -16,14 +17,22 @@ final class SettingsStore: ObservableObject {
     private let defaults: UserDefaults
 
     @Published var settings: AppSettings {
-        didSet { if settings != oldValue { save(settings, key: Key.settings) } }
+        didSet {
+            guard settings != oldValue else { return }
+            save(settings, key: Key.settings)
+            WidgetCenter.shared.reloadAllTimelines()
+        }
     }
 
     @Published var hasOnboarded: Bool {
         didSet { defaults.set(hasOnboarded, forKey: Key.onboarded) }
     }
 
-    init(defaults: UserDefaults = .standard) {
+    init(defaults: UserDefaults? = nil) {
+        if defaults == nil {
+            SharedStorage.migrateIfNeeded(keys: [Key.settings, Key.dismissed, Key.ringing, Key.onboarded])
+        }
+        let defaults = defaults ?? SharedStorage.defaults
         self.defaults = defaults
         self.settings = Self.load(AppSettings.self, key: Key.settings, from: defaults) ?? AppSettings()
         self.hasOnboarded = defaults.bool(forKey: Key.onboarded)

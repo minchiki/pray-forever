@@ -27,6 +27,7 @@ targets:
       - path: Sajda
     dependencies:
       - package: Adhan
+      - target: SajdaWidget
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.prayforever.app
@@ -36,6 +37,37 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         SUPPORTS_MACCATALYST: NO
+
+  SajdaWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: SajdaWidget
+      - path: Sajda/Models/Prayer.swift
+      - path: Sajda/Models/AppSettings.swift
+      - path: Sajda/Models/SharedStorage.swift
+      - path: Sajda/Services/PrayerTimeCalculator.swift
+      - path: Sajda/Resources/ru.lproj/Localizable.strings
+      - path: Sajda/Resources/en.lproj/Localizable.strings
+    dependencies:
+      - package: Adhan
+    info:
+      path: SajdaWidget/Info.plist
+      properties:
+        CFBundleDisplayName: pray.forever
+        CFBundleDevelopmentRegion: ru
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: SajdaWidget/SajdaWidget.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.prayforever.app
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.prayforever.app.widget
+        PRODUCT_NAME: SajdaWidget
+        SKIP_INSTALL: YES
 
   SajdaTests:
     type: bundle.unit-test

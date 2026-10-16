@@ -193,3 +193,9 @@
 "color.yellow" = "Жёлтый";
 "color.purple" = "Фиолетовый";
 "color.orange" = "Оранжевый";
+
+/* Виджет */
+"widget.name" = "Время намаза";
+"widget.description" = "Ближайший намаз и расписание на сегодня.";
+"widget.noLocation" = "Откройте pray.forever и укажите город";
+"widget.noLocation.short" = "Укажите город";
