@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>com.apple.developer.usernotifications.time-sensitive</key>
+	<true/>
+	<!--
+	Critical Alerts требуют одобрения Apple:
+	https://developer.apple.com/contact/request/notifications-critical-alerts-entitlement/
+	После одобрения раскомментируйте:
+	<key>com.apple.developer.usernotifications.critical-alerts</key>
+	<true/>
+	Код уже поддерживает критические уведомления (NotificationScheduler).
+	-->
+</dict>
+</plist>

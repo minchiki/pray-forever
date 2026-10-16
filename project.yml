@@ -1,0 +1,60 @@
+name: Sajda
+options:
+  bundleIdPrefix: com.sajda
+  developmentLanguage: ru
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+
+packages:
+  Adhan:
+    url: https://github.com/batoulapps/adhan-swift
+    from: "1.3.0"
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    TARGETED_DEVICE_FAMILY: "1"
+    ENABLE_PREVIEWS: YES
+
+targets:
+  Sajda:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sajda
+    dependencies:
+      - package: Adhan
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.sajda.app
+        PRODUCT_NAME: Sajda
+        INFOPLIST_FILE: Sajda/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Sajda/Sajda.entitlements
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        SUPPORTS_MACCATALYST: NO
+
+  SajdaTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: SajdaTests
+    dependencies:
+      - target: Sajda
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.sajda.app.tests
+
+schemes:
+  Sajda:
+    build:
+      targets:
+        Sajda: all
+        SajdaTests: [test]
+    test:
+      targets:
+        - SajdaTests

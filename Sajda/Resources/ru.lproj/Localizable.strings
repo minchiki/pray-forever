@@ -1,0 +1,142 @@
+/* Общее */
+"app.name" = "Саджда";
+"common.in" = "через %@";
+"common.minutes" = "%d мин";
+"common.min" = "мин";
+"common.done" = "Готово";
+"common.cancel" = "Отмена";
+"common.delete" = "Удалить";
+"common.openSettings" = "Открыть настройки iOS";
+
+/* Намазы */
+"prayer.fajr" = "Фаджр";
+"prayer.dhuhr" = "Зухр";
+"prayer.asr" = "Аср";
+"prayer.maghrib" = "Магриб";
+"prayer.isha" = "Иша";
+
+/* Методы расчёта */
+"method.russia" = "ДУМ РФ (Россия)";
+"method.muslimWorldLeague" = "Мусульманская всемирная лига";
+"method.egyptian" = "Египет";
+"method.karachi" = "Карачи";
+"method.ummAlQura" = "Умм аль-Кура (Мекка)";
+"method.dubai" = "Дубай";
+"method.moonsightingCommittee" = "Moonsighting Committee";
+"method.northAmerica" = "ISNA (Сев. Америка)";
+"method.kuwait" = "Кувейт";
+"method.qatar" = "Катар";
+"method.singapore" = "Сингапур";
+"method.turkey" = "Диянет (Турция)";
+"method.tehran" = "Тегеран";
+
+"madhab.shafi" = "Шафиитский (Аср раньше)";
+"madhab.hanafi" = "Ханафитский (Аср позже)";
+
+/* Задание */
+"task.rug" = "Коврик";
+"task.sink" = "Раковина";
+"task.any" = "Любое";
+"task.rug.instruction" = "Сфотографируйте коврик для намаза";
+"task.sink.instruction" = "Сфотографируйте раковину или место для омовения";
+"task.any.instruction" = "Сфотографируйте коврик для намаза или раковину";
+
+/* Звуки */
+"sound.pulse" = "Пульс";
+"sound.bell" = "Колокол";
+"sound.siren" = "Сирена";
+
+/* Уведомления */
+"notif.prayer.body.alarm" = "Наступило время намаза. Будильник через %d мин.";
+"notif.prayer.body" = "Наступило время намаза.";
+"notif.alarm.title" = "Будильник · %@";
+"notif.alarm.body" = "Откройте приложение и выполните задание, чтобы выключить сигнал.";
+"notice.killed.ringing.title" = "Будильник не выключен";
+"notice.killed.ringing.body" = "Сигнал продолжится. Откройте приложение и выполните задание.";
+"notice.killed.title" = "Не закрывайте Саджду";
+"notice.killed.body" = "Когда приложение работает в фоне, будильник звучит громче и надёжнее.";
+
+/* AlarmKit */
+"alarmkit.stop" = "Стоп";
+"alarmkit.task" = "Задание";
+
+/* Главный экран */
+"home.next" = "Следующий намаз";
+"home.noData" = "Не удалось рассчитать время намаза для этого места.";
+"home.alarmAt" = "Будильник в %@";
+"home.alarmOff" = "Будильник выключен";
+"home.alarmOn.a11y" = "Будильник включён";
+"home.alarmOff.a11y" = "Будильник выключен";
+
+/* Геолокация */
+"location.prompt.title" = "Где вы находитесь?";
+"location.prompt.body" = "Время намаза рассчитывается по координатам. Достаточно определить их один раз.";
+"location.prompt.button" = "Определить местоположение";
+"location.error.denied" = "Нет доступа к геолокации. Разрешите его в настройках iOS.";
+"location.error.generic" = "Не удалось определить местоположение. Попробуйте ещё раз.";
+
+/* Экран будильника */
+"alarm.test" = "Проверка будильника";
+"camera.shutter" = "Сделать фото";
+"camera.denied" = "Нет доступа к камере. Разрешите его в настройках iOS, чтобы выполнить задание.";
+"camera.unavailable" = "Камера недоступна.";
+"verify.success" = "Задание выполнено";
+"verify.retry" = "Переснимите — сигнал продолжится.";
+"verify.tooDark" = "Слишком темно";
+"verify.tooBright" = "Слишком светло";
+"verify.uniform" = "Кадр пустой или объектив закрыт";
+"verify.blurry" = "Фото смазано";
+"verify.screen" = "Похоже на экран или распечатку";
+"verify.notRecognized" = "Объект не распознан";
+
+/* Аварийное отключение */
+"emergency.button" = "Аварийное отключение";
+"emergency.title" = "Аварийное отключение";
+"emergency.body" = "Только на крайний случай — например, если камера не работает или вы за рулём.";
+"emergency.hold %lld" = "Удерживайте %lld секунд";
+
+/* Настройки */
+"settings.title" = "Настройки";
+"settings.section.times" = "Время намаза";
+"settings.method" = "Метод расчёта";
+"settings.madhab" = "Время Асра";
+"settings.location" = "Местоположение";
+"settings.location.none" = "Не определено";
+"settings.location.update" = "Обновить";
+"settings.offsets" = "Ручная корректировка";
+"settings.section.alarm" = "Будильник";
+"settings.delay" = "Задержка";
+"settings.delay.footer" = "В момент наступления времени приходит уведомление. Через выбранную задержку включается громкий сигнал.";
+"settings.volume" = "Громкость";
+"settings.sound" = "Звук";
+"settings.sound.preview" = "Прослушать";
+"settings.notifyAtTime" = "Уведомление о времени намаза";
+"settings.section.task" = "Задание";
+"settings.task" = "Задание";
+"settings.task.footer" = "Сигнал выключается только после того, как камера распознает выбранный объект.";
+"settings.references" = "Эталонные фото";
+"settings.section.reliability" = "Надёжность";
+"settings.keepAlive" = "Работа в фоне";
+"settings.keepAlive.footer" = "Приложение остаётся активным в фоне, поэтому будильник звучит даже в беззвучном режиме. Не закрывайте его из переключателя приложений.";
+"settings.test" = "Проверить будильник";
+"settings.permissions" = "Запросить разрешения";
+
+"offsets.footer" = "Сдвиг относительно расчётного времени, если ваша мечеть использует другое расписание.";
+"offsets.reset" = "Сбросить";
+
+"references.footer" = "Сфотографируйте свой коврик и раковину заранее. Это помогает узнавать именно их, даже если они необычные. Всё обрабатывается на устройстве.";
+"references.saved" = "Сохранено";
+"references.none" = "Нет фото";
+"references.take" = "Снять";
+"references.retake" = "Переснять";
+"references.saveError" = "Не удалось сохранить фото.";
+
+/* Онбординг */
+"onboarding.subtitle" = "Будильник ко времени намаза";
+"onboarding.p1.title" = "Точное время";
+"onboarding.p1.text" = "Пять намазов по вашей геолокации и выбранному методу.";
+"onboarding.p2.title" = "Настойчивый сигнал";
+"onboarding.p2.text" = "Уведомление в начале времени, затем громкий будильник.";
+"onboarding.p3.title" = "Выключение через камеру";
+"onboarding.p3.text" = "Сфотографируйте коврик или раковину — распознавание на устройстве.";
+"onboarding.start" = "Разрешить и начать";

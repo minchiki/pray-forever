@@ -1,0 +1,142 @@
+/* Common */
+"app.name" = "Sajda";
+"common.in" = "in %@";
+"common.minutes" = "%d min";
+"common.min" = "min";
+"common.done" = "Done";
+"common.cancel" = "Cancel";
+"common.delete" = "Delete";
+"common.openSettings" = "Open iOS Settings";
+
+/* Prayers */
+"prayer.fajr" = "Fajr";
+"prayer.dhuhr" = "Dhuhr";
+"prayer.asr" = "Asr";
+"prayer.maghrib" = "Maghrib";
+"prayer.isha" = "Isha";
+
+/* Calculation methods */
+"method.russia" = "SAMR (Russia)";
+"method.muslimWorldLeague" = "Muslim World League";
+"method.egyptian" = "Egyptian";
+"method.karachi" = "Karachi";
+"method.ummAlQura" = "Umm al-Qura (Makkah)";
+"method.dubai" = "Dubai";
+"method.moonsightingCommittee" = "Moonsighting Committee";
+"method.northAmerica" = "ISNA (North America)";
+"method.kuwait" = "Kuwait";
+"method.qatar" = "Qatar";
+"method.singapore" = "Singapore";
+"method.turkey" = "Diyanet (Turkey)";
+"method.tehran" = "Tehran";
+
+"madhab.shafi" = "Shafi (earlier Asr)";
+"madhab.hanafi" = "Hanafi (later Asr)";
+
+/* Task */
+"task.rug" = "Rug";
+"task.sink" = "Sink";
+"task.any" = "Either";
+"task.rug.instruction" = "Take a photo of your prayer rug";
+"task.sink.instruction" = "Take a photo of the sink or wudu area";
+"task.any.instruction" = "Take a photo of your prayer rug or a sink";
+
+/* Sounds */
+"sound.pulse" = "Pulse";
+"sound.bell" = "Bell";
+"sound.siren" = "Siren";
+
+/* Notifications */
+"notif.prayer.body.alarm" = "Prayer time has begun. Alarm in %d min.";
+"notif.prayer.body" = "Prayer time has begun.";
+"notif.alarm.title" = "Alarm · %@";
+"notif.alarm.body" = "Open the app and complete the task to stop the alarm.";
+"notice.killed.ringing.title" = "Alarm is still on";
+"notice.killed.ringing.body" = "It will keep ringing. Open the app and complete the task.";
+"notice.killed.title" = "Keep Sajda running";
+"notice.killed.body" = "When the app stays in the background, the alarm is louder and more reliable.";
+
+/* AlarmKit */
+"alarmkit.stop" = "Stop";
+"alarmkit.task" = "Task";
+
+/* Home */
+"home.next" = "Next prayer";
+"home.noData" = "Couldn't calculate prayer times for this location.";
+"home.alarmAt" = "Alarm at %@";
+"home.alarmOff" = "Alarm off";
+"home.alarmOn.a11y" = "Alarm on";
+"home.alarmOff.a11y" = "Alarm off";
+
+/* Location */
+"location.prompt.title" = "Where are you?";
+"location.prompt.body" = "Prayer times are calculated from your coordinates. You only need to do this once.";
+"location.prompt.button" = "Use my location";
+"location.error.denied" = "Location access is off. Allow it in iOS Settings.";
+"location.error.generic" = "Couldn't get your location. Please try again.";
+
+/* Alarm screen */
+"alarm.test" = "Alarm test";
+"camera.shutter" = "Take photo";
+"camera.denied" = "No camera access. Allow it in iOS Settings to complete the task.";
+"camera.unavailable" = "Camera unavailable.";
+"verify.success" = "Task complete";
+"verify.retry" = "Try again — the alarm keeps ringing.";
+"verify.tooDark" = "Too dark";
+"verify.tooBright" = "Too bright";
+"verify.uniform" = "Empty frame or covered lens";
+"verify.blurry" = "Photo is blurry";
+"verify.screen" = "Looks like a screen or a printout";
+"verify.notRecognized" = "Object not recognized";
+
+/* Emergency */
+"emergency.button" = "Emergency stop";
+"emergency.title" = "Emergency stop";
+"emergency.body" = "Only for real emergencies — for example, if the camera is broken or you are driving.";
+"emergency.hold %lld" = "Hold for %lld seconds";
+
+/* Settings */
+"settings.title" = "Settings";
+"settings.section.times" = "Prayer times";
+"settings.method" = "Calculation method";
+"settings.madhab" = "Asr time";
+"settings.location" = "Location";
+"settings.location.none" = "Not set";
+"settings.location.update" = "Update";
+"settings.offsets" = "Manual adjustment";
+"settings.section.alarm" = "Alarm";
+"settings.delay" = "Delay";
+"settings.delay.footer" = "You get a notification when the prayer time begins. After the delay, a loud alarm starts.";
+"settings.volume" = "Volume";
+"settings.sound" = "Sound";
+"settings.sound.preview" = "Preview";
+"settings.notifyAtTime" = "Prayer time notification";
+"settings.section.task" = "Task";
+"settings.task" = "Task";
+"settings.task.footer" = "The alarm stops only after the camera recognizes the selected object.";
+"settings.references" = "Reference photos";
+"settings.section.reliability" = "Reliability";
+"settings.keepAlive" = "Run in background";
+"settings.keepAlive.footer" = "The app stays active in the background, so the alarm rings even in silent mode. Don't swipe it away in the app switcher.";
+"settings.test" = "Test alarm";
+"settings.permissions" = "Request permissions";
+
+"offsets.footer" = "Shift from the calculated time if your mosque uses a different timetable.";
+"offsets.reset" = "Reset";
+
+"references.footer" = "Photograph your own rug and sink in advance. This helps recognize them even if they look unusual. Everything is processed on device.";
+"references.saved" = "Saved";
+"references.none" = "No photo";
+"references.take" = "Take";
+"references.retake" = "Retake";
+"references.saveError" = "Couldn't save the photo.";
+
+/* Onboarding */
+"onboarding.subtitle" = "An alarm for prayer times";
+"onboarding.p1.title" = "Accurate times";
+"onboarding.p1.text" = "Five daily prayers based on your location and chosen method.";
+"onboarding.p2.title" = "Persistent alarm";
+"onboarding.p2.text" = "A notification when the time begins, then a loud alarm.";
+"onboarding.p3.title" = "Turn off with the camera";
+"onboarding.p3.text" = "Photograph your rug or a sink — recognition runs on device.";
+"onboarding.start" = "Allow and start";
