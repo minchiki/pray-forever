@@ -6,7 +6,7 @@ import BackgroundTasks
 @MainActor
 final class AlarmCoordinator: ObservableObject {
     static let shared = AlarmCoordinator()
-    static let refreshTaskID = "com.sajda.app.refresh"
+    static let refreshTaskID = "com.prayforever.app.refresh"
 
     private static let planningDays = 3
     private static let refreshInterval: TimeInterval = 5 * 60

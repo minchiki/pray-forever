@@ -1,5 +1,5 @@
 /* Common */
-"app.name" = "Sajda";
+"app.name" = "pray.forever";
 "common.in" = "in %@";
 "common.minutes" = "%d min";
 "common.min" = "min";
@@ -53,7 +53,7 @@
 "notif.alarm.body" = "Open the app and complete the task to stop the alarm.";
 "notice.killed.ringing.title" = "Alarm is still on";
 "notice.killed.ringing.body" = "It will keep ringing. Open the app and complete the task.";
-"notice.killed.title" = "Keep Sajda running";
+"notice.killed.title" = "Keep pray.forever running";
 "notice.killed.body" = "When the app stays in the background, the alarm is louder and more reliable.";
 
 /* AlarmKit */

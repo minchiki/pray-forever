@@ -1,6 +1,6 @@
 name: Sajda
 options:
-  bundleIdPrefix: com.sajda
+  bundleIdPrefix: com.prayforever
   developmentLanguage: ru
   deploymentTarget:
     iOS: "16.0"
@@ -29,7 +29,7 @@ targets:
       - package: Adhan
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.sajda.app
+        PRODUCT_BUNDLE_IDENTIFIER: com.prayforever.app
         PRODUCT_NAME: Sajda
         INFOPLIST_FILE: Sajda/Info.plist
         CODE_SIGN_ENTITLEMENTS: Sajda/Sajda.entitlements
@@ -47,7 +47,7 @@ targets:
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
-        PRODUCT_BUNDLE_IDENTIFIER: com.sajda.app.tests
+        PRODUCT_BUNDLE_IDENTIFIER: com.prayforever.app.tests
 
 schemes:
   Sajda:

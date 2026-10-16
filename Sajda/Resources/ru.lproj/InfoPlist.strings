@@ -1,4 +1,4 @@
-"CFBundleDisplayName" = "Саджда";
+"CFBundleDisplayName" = "pray.forever";
 "NSCameraUsageDescription" = "Камера нужна, чтобы сфотографировать коврик или место для омовения и выключить будильник.";
 "NSLocationWhenInUseUsageDescription" = "Геолокация нужна для точного расчёта времени намаза.";
 "NSAlarmKitUsageDescription" = "Будильник звонит во время намаза даже в беззвучном режиме.";
