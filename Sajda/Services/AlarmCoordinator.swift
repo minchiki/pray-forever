@@ -25,8 +25,8 @@ final class AlarmCoordinator: ObservableObject {
     private var ticker: Timer?
     private var lastRefresh: Date = .distantPast
 
-    init(store: SettingsStore = SettingsStore()) {
-        self.store = store
+    init(store: SettingsStore? = nil) {
+        self.store = store ?? SettingsStore()
     }
 
     // MARK: - Жизненный цикл
