@@ -106,7 +106,7 @@ final class SystemAlarmBridge {
     }
 
     private static func prayer(fromID id: String) -> Prayer {
-        Prayer.allCases.first { id.hasSuffix($0.rawValue) } ?? .dhuhr
+        Prayer.allCases.first { id.contains($0.rawValue) } ?? .dhuhr
     }
 
     private func loadMapping() -> [String: String] {

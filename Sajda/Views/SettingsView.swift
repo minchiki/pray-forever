@@ -4,6 +4,7 @@ struct SettingsView: View {
     @EnvironmentObject private var coordinator: AlarmCoordinator
     @EnvironmentObject private var store: SettingsStore
     @Environment(\.dismiss) private var dismiss
+    @State private var pendingChange: GuardedChange?
 
     var body: some View {
         NavigationStack {
@@ -21,6 +22,12 @@ struct SettingsView: View {
                 }
             }
         }
+        .guardedChallenge($pendingChange)
+    }
+
+    /// Ослабление будильника за час до звонка — только через испытание.
+    private func guarded(weakening: Bool, _ change: @escaping () -> Void) {
+        coordinator.perform(weakening: weakening, pending: $pendingChange, change)
     }
 
     // MARK: - Время намаза
@@ -68,7 +75,7 @@ struct SettingsView: View {
             ForEach(Prayer.allCases) { prayer in
                 Toggle(prayer.localizedName, isOn: alarmBinding(prayer))
             }
-            Stepper(value: $store.settings.delayMinutes, in: AppSettings.delayRange) {
+            Stepper(value: delayBinding, in: AppSettings.delayRange) {
                 HStack {
                     Text("settings.delay")
                     Spacer()
@@ -92,7 +99,25 @@ struct SettingsView: View {
     private func alarmBinding(_ prayer: Prayer) -> Binding<Bool> {
         Binding(
             get: { store.settings.isAlarmEnabled(prayer) },
-            set: { value in store.update { $0.alarmEnabled[prayer.rawValue] = value } }
+            set: { value in
+                guarded(weakening: !value) { store.update { $0.alarmEnabled[prayer.rawValue] = value } }
+            }
+        )
+    }
+
+    private var delayBinding: Binding<Int> {
+        Binding(
+            get: { store.settings.delayMinutes },
+            set: { value in
+                guarded(weakening: value > store.settings.delayMinutes) { store.update { $0.delayMinutes = value } }
+            }
+        )
+    }
+
+    private func protectedToggle(_ keyPath: WritableKeyPath<AppSettings, Bool>) -> Binding<Bool> {
+        Binding(
+            get: { store.settings[keyPath: keyPath] },
+            set: { value in guarded(weakening: !value) { store.update { $0[keyPath: keyPath] = value } } }
         )
     }
 
@@ -121,7 +146,8 @@ struct SettingsView: View {
 
     private var reliabilitySection: some View {
         Section {
-            Toggle("settings.keepAlive", isOn: $store.settings.keepAlive)
+            Toggle("settings.keepAlive", isOn: protectedToggle(\.keepAlive))
+            Toggle("settings.wakeCheck", isOn: protectedToggle(\.wakeCheck))
             NavigationLink {
                 PauseView()
                     .environmentObject(coordinator)
@@ -148,7 +174,13 @@ struct SettingsView: View {
         } header: {
             Text("settings.section.reliability")
         } footer: {
-            Text("settings.keepAlive.footer")
+            VStack(alignment: .leading, spacing: 6) {
+                Text("settings.keepAlive.footer")
+                Text("settings.wakeCheck.footer")
+                if coordinator.changesLocked {
+                    Text("settings.locked.footer").foregroundStyle(.orange)
+                }
+            }
         }
     }
 }
@@ -156,6 +188,8 @@ struct SettingsView: View {
 /// Ручная корректировка времени каждого намаза.
 struct OffsetsView: View {
     @EnvironmentObject private var store: SettingsStore
+    @ObservedObject private var coordinator = AlarmCoordinator.shared
+    @State private var pendingChange: GuardedChange?
 
     var body: some View {
         Form {
@@ -176,18 +210,25 @@ struct OffsetsView: View {
             }
             Section {
                 Button("offsets.reset", role: .destructive) {
-                    store.update { $0.offsetMinutes = [:] }
+                    coordinator.perform(weakening: true, pending: $pendingChange) {
+                        store.update { $0.offsetMinutes = [:] }
+                    }
                 }
             }
         }
         .navigationTitle(Text("settings.offsets"))
         .navigationBarTitleDisplayMode(.inline)
+        .guardedChallenge($pendingChange)
     }
 
     private func offsetBinding(_ prayer: Prayer) -> Binding<Int> {
         Binding(
             get: { store.settings.offset(for: prayer) },
-            set: { value in store.update { $0.offsetMinutes[prayer.rawValue] = value } }
+            set: { value in
+                coordinator.perform(weakening: true, pending: $pendingChange) {
+                    store.update { $0.offsetMinutes[prayer.rawValue] = value }
+                }
+            }
         )
     }
 

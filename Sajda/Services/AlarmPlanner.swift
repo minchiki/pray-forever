@@ -44,7 +44,7 @@ struct AlarmPlanner {
             guard budget > 0 else { break }
             let wantsAlarm = instance.alarmEnabled && !dismissed.contains(instance.id) && instance.alarmTime > now
 
-            if notifyAtPrayerTime, instance.prayerTime > now {
+            if notifyAtPrayerTime || instance.isWakeCheck, instance.prayerTime > now {
                 result.append(Planned(identifier: "\(Self.idPrefix)prayer.\(instance.id)",
                                       fireDate: instance.prayerTime, kind: .prayerTime, instance: instance))
                 budget -= 1

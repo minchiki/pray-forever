@@ -37,8 +37,7 @@ enum Countdown {
 
 /// Кнопка аварийного отключения: нужно удерживать несколько секунд.
 struct HoldToStopButton: View {
-    static let holdDuration: Double = 5
-
+    let holdDuration: Double
     let action: () -> Void
 
     @State private var progress: Double = 0
@@ -64,7 +63,7 @@ struct HoldToStopButton: View {
                     .onChanged { _ in if !isHolding { begin() } }
                     .onEnded { _ in cancel() }
             )
-            Text("emergency.hold \(Int(Self.holdDuration))")
+            Text("emergency.hold \(Int(holdDuration))")
                 .font(.footnote)
                 .foregroundStyle(.white.opacity(0.7))
         }
@@ -77,7 +76,7 @@ struct HoldToStopButton: View {
         let start = Date()
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         timer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { t in
-            let value = Date().timeIntervalSince(start) / Self.holdDuration
+            let value = Date().timeIntervalSince(start) / holdDuration
             progress = min(1, value)
             if value >= 1 {
                 t.invalidate()

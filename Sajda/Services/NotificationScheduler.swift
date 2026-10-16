@@ -86,6 +86,11 @@ final class NotificationScheduler {
         content.threadIdentifier = item.instance.id
 
         switch item.kind {
+        case .prayerTime where item.instance.isWakeCheck:
+            content.title = String(localized: "wake.notif.title")
+            content.body = String(localized: "wake.notif.body")
+            content.sound = UNNotificationSound(named: UNNotificationSoundName(settings.sound.fileName))
+            content.interruptionLevel = .timeSensitive
         case .prayerTime:
             content.title = name
             content.body = item.instance.alarmEnabled

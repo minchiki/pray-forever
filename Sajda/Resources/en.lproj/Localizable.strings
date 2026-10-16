@@ -199,3 +199,16 @@
 "widget.description" = "Next prayer and today's schedule.";
 "widget.noLocation" = "Open pray.forever and set your city";
 "widget.noLocation.short" = "Set your city";
+
+/* Wake check and protection */
+"wake.title" = "Are you awake?";
+"wake.body" = "Tap the button, or the alarm will ring again and you'll have to repeat the task.";
+"wake.confirm" = "I'm awake";
+"wake.notif.title" = "Check: are you awake?";
+"wake.notif.body" = "Open the app and tap “I'm awake” within a minute.";
+"settings.wakeCheck" = "Wake-up check";
+"settings.wakeCheck.footer" = "5 minutes after the task you have to confirm you're awake. Miss the 1-minute window and the alarm rings again.";
+"settings.locked.footer" = "The alarm is less than an hour away: turning it off or delaying it requires the challenge.";
+"emergency.remaining" = "Left this week: %d of %d";
+"emergency.limit" = "Emergency stop limit reached";
+"emergency.next" = "Next one available %@";

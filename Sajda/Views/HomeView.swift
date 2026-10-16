@@ -38,6 +38,8 @@ struct HomeView: View {
                     .accessibilityLabel(Text("settings.title"))
                 }
             }
+            .onChange(of: coordinator.activeAlarm) { if $0 != nil { showSettings = false } }
+            .onChange(of: coordinator.wakeCheck) { if $0 != nil { showSettings = false } }
             .sheet(isPresented: $showSettings) {
                 SettingsView()
                     .environmentObject(coordinator)
@@ -103,6 +105,7 @@ private struct NextPrayerCard: View {
 private struct TodayList: View {
     @EnvironmentObject private var coordinator: AlarmCoordinator
     @EnvironmentObject private var store: SettingsStore
+    @State private var pendingChange: GuardedChange?
 
     var body: some View {
         let times = coordinator.todayTimes() ?? [:]
@@ -114,7 +117,10 @@ private struct TodayList: View {
                           time: times[prayer],
                           isNext: prayer == nextID && times[prayer].map { $0 > Date() } == true,
                           alarmOn: store.settings.isAlarmEnabled(prayer)) {
-                    store.update { $0.alarmEnabled[prayer.rawValue] = !$0.isAlarmEnabled(prayer) }
+                    let turningOff = store.settings.isAlarmEnabled(prayer)
+                    coordinator.perform(weakening: turningOff, pending: $pendingChange) {
+                        store.update { $0.alarmEnabled[prayer.rawValue] = !turningOff }
+                    }
                 }
             }
         }

@@ -19,6 +19,8 @@ final class AlarmCoordinator: ObservableObject {
 
     /// Срабатывание, для которого показывается полноэкранное задание.
     @Published private(set) var activeAlarm: AlarmInstance?
+    /// Проверка «не уснул», ожидающая нажатия.
+    @Published private(set) var wakeCheck: AlarmInstance?
     @Published private(set) var instances: [AlarmInstance] = []
     @Published var locationError: String?
 
@@ -76,15 +78,18 @@ final class AlarmCoordinator: ObservableObject {
 
     /// Ближайший намаз (время намаза ещё не наступило).
     func nextPrayer(now: Date = Date()) -> AlarmInstance? {
-        instances.first { $0.prayerTime > now }
+        instances.first { $0.prayerTime > now && !$0.isWakeCheck }
     }
 
     func refresh(now: Date = Date()) {
         lastRefresh = now
         let settings = store.settings
-        instances = calculator.instances(from: now, days: Self.planningDays, settings: settings,
-                                         lookBack: AlarmPlanner.maxRingDuration)
         let dismissed = Set(store.dismissedIDs().keys)
+        let checks = AlarmPolicy.liveWakeChecks(store.wakeChecks, dismissed: dismissed, now: now)
+        store.wakeChecks = checks
+        instances = (calculator.instances(from: now, days: Self.planningDays, settings: settings,
+                                          lookBack: AlarmPlanner.maxRingDuration) + checks)
+            .sorted { $0.prayerTime < $1.prayerTime }
         let pause = settings.activePause(now: now)
         let active = currentDue(now: now, dismissed: dismissed)
         // На паузе планируем только то, что после её окончания — будильники вернутся сами.
@@ -119,6 +124,7 @@ final class AlarmCoordinator: ObservableObject {
 
     private func tick(now: Date = Date()) {
         let dismissed = Set(store.dismissedIDs().keys)
+        updateWakeCheck(now: now, dismissed: dismissed)
         if let due = currentDue(now: now, dismissed: dismissed) {
             if activeAlarm?.id != due.id || audio.mode != .ringing {
                 ring(due)
@@ -157,6 +163,47 @@ final class AlarmCoordinator: ObservableObject {
         }
     }
 
+    // MARK: - Проверка «не уснул»
+
+    private func updateWakeCheck(now: Date, dismissed: Set<String>) {
+        let pending = activeAlarm == nil
+            ? AlarmPolicy.pendingWakeCheck(in: store.wakeChecks, dismissed: dismissed, now: now)
+            : nil
+        guard pending?.id != wakeCheck?.id else { return }
+        wakeCheck = pending
+        if pending != nil { audio.preview(sound: store.settings.sound) }
+    }
+
+    /// Пользователь подтвердил, что не спит.
+    func confirmAwake() {
+        guard let check = wakeCheck else { return }
+        store.markDismissed(check.id)
+        wakeCheck = nil
+        Task { await notifications.clearAlarm(instanceID: check.id) }
+        #if canImport(AlarmKit)
+        if #available(iOS 26.0, *) {
+            SystemAlarmBridge.shared.clear(instanceID: check.id)
+        }
+        #endif
+        refresh()
+    }
+
+    // MARK: - Защита от обхода
+
+    /// Ослабить будильник (выключить, сдвинуть) сейчас можно только через испытание.
+    var changesLocked: Bool {
+        AlarmPolicy.changesLocked(instances: instances, dismissed: Set(store.dismissedIDs().keys),
+                                  isRinging: activeAlarm != nil, now: Date())
+    }
+
+    var emergencyRemaining: Int {
+        AlarmPolicy.emergencyRemaining(uses: store.emergencyUses, now: Date())
+    }
+
+    var nextEmergencyDate: Date? {
+        AlarmPolicy.nextEmergencyDate(uses: store.emergencyUses, now: Date())
+    }
+
     // MARK: - Пауза
 
     var pausedUntil: Date? { store.settings.activePause() }
@@ -178,12 +225,19 @@ final class AlarmCoordinator: ObservableObject {
     /// Задание выполнено (фото распознано).
     func completeTask() {
         guard let active = activeAlarm else { return }
+        if store.settings.wakeCheck, let check = AlarmPolicy.wakeCheck(after: active, completedAt: Date()) {
+            store.wakeChecks = store.wakeChecks + [check]
+        }
         finish(active, markDismissed: true)
     }
 
     /// Аварийное отключение.
     func emergencyStop() {
         guard let active = activeAlarm else { return }
+        if !active.isTest {
+            guard emergencyRemaining > 0 else { return }
+            store.emergencyUses = AlarmPolicy.recentEmergencyUses(store.emergencyUses, now: Date()) + [Date()]
+        }
         finish(active, markDismissed: true)
     }
 

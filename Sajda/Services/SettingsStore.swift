@@ -10,6 +10,8 @@ final class SettingsStore: ObservableObject {
         static let dismissed = "sajda.dismissed.v1"
         static let ringing = "sajda.ringing.v1"
         static let onboarded = "sajda.onboarded.v1"
+        static let wakeChecks = "sajda.wakechecks.v1"
+        static let emergencyUses = "sajda.emergency.v1"
     }
 
     private static let dismissedRetention: TimeInterval = 3 * 24 * 3600
@@ -30,7 +32,8 @@ final class SettingsStore: ObservableObject {
 
     init(defaults: UserDefaults? = nil) {
         if defaults == nil {
-            SharedStorage.migrateIfNeeded(keys: [Key.settings, Key.dismissed, Key.ringing, Key.onboarded])
+            SharedStorage.migrateIfNeeded(keys: [Key.settings, Key.dismissed, Key.ringing, Key.onboarded,
+                                                 Key.wakeChecks, Key.emergencyUses])
         }
         let defaults = defaults ?? SharedStorage.defaults
         self.defaults = defaults
@@ -62,6 +65,20 @@ final class SettingsStore: ObservableObject {
         set {
             if let newValue { save(newValue, key: Key.ringing) } else { defaults.removeObject(forKey: Key.ringing) }
         }
+    }
+
+    // MARK: - Проверки «не уснул»
+
+    var wakeChecks: [AlarmInstance] {
+        get { Self.load([AlarmInstance].self, key: Key.wakeChecks, from: defaults) ?? [] }
+        set { save(newValue, key: Key.wakeChecks) }
+    }
+
+    // MARK: - Аварийные отключения
+
+    var emergencyUses: [Date] {
+        get { Self.load([Date].self, key: Key.emergencyUses, from: defaults) ?? [] }
+        set { save(newValue, key: Key.emergencyUses) }
     }
 
     // MARK: - Helpers

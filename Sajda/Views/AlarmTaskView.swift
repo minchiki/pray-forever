@@ -130,11 +130,27 @@ struct AlarmTaskView: View {
             Text("emergency.body")
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.white.opacity(0.75))
-            HoldToStopButton {
-                showEmergency = false
-                coordinator.emergencyStop()
+            if alarm.isTest || coordinator.emergencyRemaining > 0 {
+                HoldToStopButton(holdDuration: AlarmPolicy.emergencyHoldSeconds) {
+                    showEmergency = false
+                    coordinator.emergencyStop()
+                }
+                .padding(.top, 8)
+                Text(String(format: String(localized: "emergency.remaining"),
+                            coordinator.emergencyRemaining, AlarmPolicy.emergencyLimit))
+                    .font(.footnote)
+                    .foregroundStyle(.white.opacity(0.6))
+            } else {
+                Text("emergency.limit")
+                    .font(.headline)
+                    .multilineTextAlignment(.center)
+                if let next = coordinator.nextEmergencyDate {
+                    Text(String(format: String(localized: "emergency.next"),
+                                next.formatted(date: .abbreviated, time: .shortened)))
+                        .font(.footnote)
+                        .foregroundStyle(.white.opacity(0.6))
+                }
             }
-            .padding(.top, 8)
             Button("common.cancel") { showEmergency = false }
                 .foregroundStyle(.white)
                 .frame(minHeight: 44)
@@ -143,7 +159,7 @@ struct AlarmTaskView: View {
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(white: 0.1).ignoresSafeArea())
-        .presentationDetents([.medium])
+        .presentationDetents([.large])
     }
 
     // MARK: - Actions

@@ -48,6 +48,8 @@ struct AppSettings: Codable, Equatable {
     var task: TaskKind = .any
     var notifyAtPrayerTime: Bool = true
     var keepAlive: Bool = true
+    /// Проверка «не уснул» через 5 минут после выполненного задания.
+    var wakeCheck: Bool = true
     var location: SavedLocation?
     /// Вся система на паузе до этого момента (после прохождения испытания).
     var pausedUntil: Date?
@@ -82,6 +84,7 @@ struct AppSettings: Codable, Equatable {
         task = (try? c.decodeIfPresent(TaskKind.self, forKey: .task)) ?? d.task
         notifyAtPrayerTime = (try? c.decodeIfPresent(Bool.self, forKey: .notifyAtPrayerTime)) ?? d.notifyAtPrayerTime
         keepAlive = (try? c.decodeIfPresent(Bool.self, forKey: .keepAlive)) ?? d.keepAlive
+        wakeCheck = (try? c.decodeIfPresent(Bool.self, forKey: .wakeCheck)) ?? d.wakeCheck
         location = try? c.decodeIfPresent(SavedLocation.self, forKey: .location)
         pausedUntil = try? c.decodeIfPresent(Date.self, forKey: .pausedUntil)
     }
