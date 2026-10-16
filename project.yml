@@ -47,8 +47,10 @@ targets:
       - path: Sajda/Models/AppSettings.swift
       - path: Sajda/Models/SharedStorage.swift
       - path: Sajda/Services/PrayerTimeCalculator.swift
-      - path: Sajda/Resources/ru.lproj/Localizable.strings
-      - path: Sajda/Resources/en.lproj/Localizable.strings
+      - path: Sajda/Resources
+        includes:
+          - "*.lproj/Localizable.strings"
+        buildPhase: resources
     dependencies:
       - package: Adhan
     info:
