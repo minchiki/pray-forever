@@ -85,24 +85,31 @@ final class AlarmCoordinator: ObservableObject {
         instances = calculator.instances(from: now, days: Self.planningDays, settings: settings,
                                          lookBack: AlarmPlanner.maxRingDuration)
         let dismissed = Set(store.dismissedIDs().keys)
+        let pause = settings.activePause(now: now)
         let active = currentDue(now: now, dismissed: dismissed)
-        let plan = AlarmPlanner().plan(instances: instances, active: active, dismissed: dismissed,
+        // На паузе планируем только то, что после её окончания — будильники вернутся сами.
+        let schedulable = pause.map { end in
+            calculator.instances(from: end, days: Self.planningDays, settings: settings).filter { $0.prayerTime >= end }
+        } ?? instances
+        let plan = AlarmPlanner().plan(instances: schedulable, active: active, dismissed: dismissed,
                                        notifyAtPrayerTime: settings.notifyAtPrayerTime, now: now)
-        let upcomingAlarms = instances.filter { $0.alarmEnabled && $0.alarmTime > now && !dismissed.contains($0.id) }
+        let upcomingAlarms = schedulable.filter { $0.alarmEnabled && $0.alarmTime > now && !dismissed.contains($0.id) }
 
         Task {
             await notifications.apply(plan, settings: settings)
+            if let pause { await notifications.schedulePauseEnded(at: pause) }
             #if canImport(AlarmKit)
             if #available(iOS 26.0, *) {
                 await SystemAlarmBridge.shared.sync(upcoming: upcomingAlarms, sound: settings.sound)
             }
             #endif
         }
-        updateKeepAlive(hasUpcoming: !upcomingAlarms.isEmpty)
+        updateKeepAlive(hasUpcoming: pause == nil && !upcomingAlarms.isEmpty)
         tick(now: now)
     }
 
     private func currentDue(now: Date, dismissed: Set<String>) -> AlarmInstance? {
+        if store.settings.activePause(now: now) != nil { return nil }
         if let ringing = store.ringingInstance, !dismissed.contains(ringing.id),
            now < ringing.alarmTime.addingTimeInterval(AlarmPlanner.maxRingDuration) {
             return ringing
@@ -148,6 +155,20 @@ final class AlarmCoordinator: ObservableObject {
                                            notifyAtPrayerTime: settings.notifyAtPrayerTime, now: Date())
             Task { await notifications.apply(plan, settings: settings) }
         }
+    }
+
+    // MARK: - Пауза
+
+    var pausedUntil: Date? { store.settings.activePause() }
+
+    /// Вызывается только после успешного прохождения испытания.
+    func pause(for duration: TimeInterval) {
+        guard activeAlarm == nil else { return }
+        store.update { $0.pausedUntil = Date().addingTimeInterval(duration) }
+    }
+
+    func resume() {
+        store.update { $0.pausedUntil = nil }
     }
 
     func startTestAlarm() {

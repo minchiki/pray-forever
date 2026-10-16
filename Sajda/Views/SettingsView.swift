@@ -122,6 +122,19 @@ struct SettingsView: View {
     private var reliabilitySection: some View {
         Section {
             Toggle("settings.keepAlive", isOn: $store.settings.keepAlive)
+            NavigationLink {
+                PauseView()
+                    .environmentObject(coordinator)
+                    .environmentObject(store)
+            } label: {
+                HStack {
+                    Text("pause.title")
+                    Spacer()
+                    if store.settings.activePause() != nil {
+                        Text("pause.on").foregroundStyle(.secondary)
+                    }
+                }
+            }
             Button("settings.test") {
                 dismiss()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { coordinator.startTestAlarm() }

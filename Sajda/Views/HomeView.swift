@@ -9,6 +9,10 @@ struct HomeView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
+                    if let until = store.settings.activePause() {
+                        PauseBanner(until: until) { coordinator.resume() }
+                            .padding(.top, 8)
+                    }
                     if store.settings.location == nil {
                         LocationPromptCard()
                     } else {

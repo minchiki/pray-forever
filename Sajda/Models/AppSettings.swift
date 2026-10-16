@@ -49,11 +49,19 @@ struct AppSettings: Codable, Equatable {
     var notifyAtPrayerTime: Bool = true
     var keepAlive: Bool = true
     var location: SavedLocation?
+    /// Вся система на паузе до этого момента (после прохождения испытания).
+    var pausedUntil: Date?
 
     init() {}
 
     func isAlarmEnabled(_ prayer: Prayer) -> Bool { alarmEnabled[prayer.rawValue] ?? true }
     func offset(for prayer: Prayer) -> Int { offsetMinutes[prayer.rawValue] ?? 0 }
+
+    /// Конец паузы, если она ещё действует.
+    func activePause(now: Date = Date()) -> Date? {
+        guard let pausedUntil, pausedUntil > now else { return nil }
+        return pausedUntil
+    }
 
     func with(_ change: (inout AppSettings) -> Void) -> AppSettings {
         var copy = self
@@ -75,5 +83,6 @@ struct AppSettings: Codable, Equatable {
         notifyAtPrayerTime = (try? c.decodeIfPresent(Bool.self, forKey: .notifyAtPrayerTime)) ?? d.notifyAtPrayerTime
         keepAlive = (try? c.decodeIfPresent(Bool.self, forKey: .keepAlive)) ?? d.keepAlive
         location = try? c.decodeIfPresent(SavedLocation.self, forKey: .location)
+        pausedUntil = try? c.decodeIfPresent(Date.self, forKey: .pausedUntil)
     }
 }

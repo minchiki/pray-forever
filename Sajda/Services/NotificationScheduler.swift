@@ -55,6 +55,17 @@ final class NotificationScheduler {
         center.removeDeliveredNotifications(withIdentifiers: delivered)
     }
 
+    /// Напоминание о том, что пауза закончилась и будильники снова работают.
+    func schedulePauseEnded(at date: Date) async {
+        let content = UNMutableNotificationContent()
+        content.title = String(localized: "pause.ended.title")
+        content.body = String(localized: "pause.ended.body")
+        content.sound = .default
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(1, date.timeIntervalSinceNow), repeats: false)
+        try? await center.add(UNNotificationRequest(identifier: "\(AlarmPlanner.idPrefix)pause.end",
+                                                    content: content, trigger: trigger))
+    }
+
     /// Мгновенное уведомление (например, если приложение выгрузили во время будильника).
     func postImmediate(title: String, body: String, sound: AlarmSound?) {
         let content = UNMutableNotificationContent()
