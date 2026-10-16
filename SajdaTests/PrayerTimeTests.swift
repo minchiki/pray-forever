@@ -92,3 +92,18 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertEqual(AlarmInstance.makeID(prayer: .asr, day: date, calendar: cal), "2026-01-05-asr")
     }
 }
+
+@MainActor
+final class CoordinateParsingTests: XCTestCase {
+    func testParsesDotAndCommaDecimals() {
+        let parsed = LocationPickerView.parseCoordinates("55,7961", " 49.1064 ")
+        XCTAssertEqual(parsed?.0 ?? 0, 55.7961, accuracy: 0.00001)
+        XCTAssertEqual(parsed?.1 ?? 0, 49.1064, accuracy: 0.00001)
+    }
+
+    func testRejectsOutOfRangeAndGarbage() {
+        XCTAssertNil(LocationPickerView.parseCoordinates("91", "10"))
+        XCTAssertNil(LocationPickerView.parseCoordinates("10", "-181"))
+        XCTAssertNil(LocationPickerView.parseCoordinates("abc", "10"))
+    }
+}

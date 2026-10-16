@@ -9,7 +9,8 @@ final class AlarmAudioEngine {
 
     private(set) var mode: Mode = .idle
     private var player: AVAudioPlayer?
-    private var targetVolume: Float = 1
+    /// Будильник всегда звучит на максимальной системной громкости.
+    private let targetVolume: Float = 1
     private var volumeObservation: NSKeyValueObservation?
     private let volumeView = MPVolumeView(frame: CGRect(x: -2000, y: -2000, width: 1, height: 1))
 
@@ -47,8 +48,7 @@ final class AlarmAudioEngine {
         try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
     }
 
-    func startRinging(sound: AlarmSound, volume: Double) {
-        targetVolume = Float(max(0.1, min(1, volume)))
+    func startRinging(sound: AlarmSound) {
         do {
             try activateRingingSession()
             stopPlayer()
@@ -72,13 +72,13 @@ final class AlarmAudioEngine {
     }
 
     /// Короткое прослушивание звука в настройках.
-    func preview(sound: AlarmSound, volume: Double) {
+    func preview(sound: AlarmSound) {
         guard mode != .ringing else { return }
         let wasKeepAlive = mode == .keepAlive
         try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [])
         try? AVAudioSession.sharedInstance().setActive(true)
         stopPlayer()
-        player = try? makePlayer(resource: sound.fileName, volume: Float(volume), loops: 0)
+        player = try? makePlayer(resource: sound.fileName, volume: 1, loops: 0)
         player?.play()
         let previewDuration: TimeInterval = 3
         DispatchQueue.main.asyncAfter(deadline: .now() + previewDuration) { [weak self] in
@@ -137,7 +137,7 @@ final class AlarmAudioEngine {
         volumeObservation = AVAudioSession.sharedInstance().observe(\.outputVolume, options: [.new]) { [weak self] _, change in
             guard let newValue = change.newValue else { return }
             Task { @MainActor in
-                guard let self, self.mode == .ringing, newValue < self.targetVolume - 0.05 else { return }
+                guard let self, self.mode == .ringing, newValue < self.targetVolume - 0.01 else { return }
                 self.enforceSystemVolume()
             }
         }

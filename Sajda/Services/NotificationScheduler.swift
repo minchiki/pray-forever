@@ -88,7 +88,7 @@ final class NotificationScheduler {
             content.categoryIdentifier = Self.alarmCategory
             let soundName = UNNotificationSoundName(settings.sound.fileName)
             if critical {
-                content.sound = .criticalSoundNamed(soundName, withAudioVolume: Float(settings.volume))
+                content.sound = .criticalSoundNamed(soundName, withAudioVolume: 1.0)
                 content.interruptionLevel = .critical
             } else {
                 content.sound = UNNotificationSound(named: soundName)

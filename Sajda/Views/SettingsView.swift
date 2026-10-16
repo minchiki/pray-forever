@@ -3,7 +3,6 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject private var coordinator: AlarmCoordinator
     @EnvironmentObject private var store: SettingsStore
-    @ObservedObject private var location = AlarmCoordinator.shared.location
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -34,22 +33,18 @@ struct SettingsView: View {
             Picker("settings.madhab", selection: $store.settings.madhab) {
                 ForEach(MadhabOption.allCases) { Text($0.localizedName).tag($0) }
             }
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
+            NavigationLink {
+                LocationPickerView()
+                    .environmentObject(coordinator)
+                    .environmentObject(store)
+            } label: {
+                HStack {
                     Text("settings.location")
+                    Spacer()
                     Text(store.settings.location?.name ?? coordinatesText ?? String(localized: "settings.location.none"))
-                        .font(.footnote)
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
-                Spacer()
-                if location.isLocating {
-                    ProgressView()
-                } else {
-                    Button("settings.location.update") { Task { await coordinator.updateLocation() } }
-                }
-            }
-            if let error = coordinator.locationError {
-                Text(error).font(.footnote).foregroundStyle(.red)
             }
             NavigationLink {
                 OffsetsView().environmentObject(store)
@@ -82,15 +77,6 @@ struct SettingsView: View {
                         .monospacedDigit()
                 }
             }
-            VStack(alignment: .leading, spacing: 8) {
-                Text("settings.volume")
-                HStack(spacing: 12) {
-                    Image(systemName: "speaker.fill").foregroundStyle(.secondary)
-                    Slider(value: $store.settings.volume, in: 0.3...1)
-                    Image(systemName: "speaker.wave.3.fill").foregroundStyle(.secondary)
-                }
-            }
-            .padding(.vertical, 4)
             Picker("settings.sound", selection: $store.settings.sound) {
                 ForEach(AlarmSound.allCases) { Text($0.localizedName).tag($0) }
             }

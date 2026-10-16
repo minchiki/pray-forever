@@ -140,7 +140,7 @@ final class AlarmCoordinator: ObservableObject {
         let isNew = activeAlarm?.id != instance.id
         activeAlarm = instance
         store.ringingInstance = instance
-        audio.startRinging(sound: store.settings.sound, volume: store.settings.volume)
+        audio.startRinging(sound: store.settings.sound)
         if isNew {
             let settings = store.settings
             let plan = AlarmPlanner().plan(instances: instances, active: instance,
@@ -182,7 +182,7 @@ final class AlarmCoordinator: ObservableObject {
     }
 
     func previewSound() {
-        audio.preview(sound: store.settings.sound, volume: store.settings.volume)
+        audio.preview(sound: store.settings.sound)
     }
 
     // MARK: - Разрешения и геолокация

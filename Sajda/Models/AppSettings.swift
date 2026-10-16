@@ -44,7 +44,6 @@ struct AppSettings: Codable, Equatable {
     var alarmEnabled: [String: Bool] = Dictionary(uniqueKeysWithValues: Prayer.allCases.map { ($0.rawValue, true) })
     var offsetMinutes: [String: Int] = [:]
     var delayMinutes: Int = 5
-    var volume: Double = 1.0
     var sound: AlarmSound = .pulse
     var task: TaskKind = .any
     var notifyAtPrayerTime: Bool = true
@@ -71,7 +70,6 @@ struct AppSettings: Codable, Equatable {
         alarmEnabled = (try? c.decodeIfPresent([String: Bool].self, forKey: .alarmEnabled)) ?? d.alarmEnabled
         offsetMinutes = (try? c.decodeIfPresent([String: Int].self, forKey: .offsetMinutes)) ?? d.offsetMinutes
         delayMinutes = (try? c.decodeIfPresent(Int.self, forKey: .delayMinutes)) ?? d.delayMinutes
-        volume = (try? c.decodeIfPresent(Double.self, forKey: .volume)) ?? d.volume
         sound = (try? c.decodeIfPresent(AlarmSound.self, forKey: .sound)) ?? d.sound
         task = (try? c.decodeIfPresent(TaskKind.self, forKey: .task)) ?? d.task
         notifyAtPrayerTime = (try? c.decodeIfPresent(Bool.self, forKey: .notifyAtPrayerTime)) ?? d.notifyAtPrayerTime

@@ -186,6 +186,12 @@ private struct LocationPromptCard: View {
             .buttonStyle(.borderedProminent)
             .buttonBorderShape(.roundedRectangle(radius: 14))
             .disabled(location.isLocating)
+            NavigationLink {
+                LocationPickerView()
+            } label: {
+                Text("location.prompt.manual")
+                    .frame(maxWidth: .infinity, minHeight: 44)
+            }
         }
         .padding(20)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))

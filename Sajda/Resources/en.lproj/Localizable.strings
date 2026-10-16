@@ -106,7 +106,7 @@
 "settings.offsets" = "Manual adjustment";
 "settings.section.alarm" = "Alarm";
 "settings.delay" = "Delay";
-"settings.delay.footer" = "You get a notification when the prayer time begins. After the delay, a loud alarm starts.";
+"settings.delay.footer" = "You get a notification when the prayer time begins. After the delay, the alarm starts at maximum volume.";
 "settings.volume" = "Volume";
 "settings.sound" = "Sound";
 "settings.sound.preview" = "Preview";
@@ -140,3 +140,17 @@
 "onboarding.p3.title" = "Turn off with the camera";
 "onboarding.p3.text" = "Photograph your rug or a sink — recognition runs on device.";
 "onboarding.start" = "Allow and start";
+
+/* Manual location */
+"location.prompt.manual" = "Choose city manually";
+"location.current" = "Current";
+"location.useCurrent" = "Detect automatically";
+"location.search" = "Search city";
+"location.search.placeholder" = "e.g. Istanbul";
+"location.search.empty" = "Nothing found";
+"location.search.error" = "Search unavailable. Check your connection or enter coordinates.";
+"location.coordinates" = "Coordinates";
+"location.latitude" = "Latitude, e.g. 41.0082";
+"location.longitude" = "Longitude, e.g. 28.9784";
+"location.coordinates.save" = "Save coordinates";
+"location.coordinates.footer" = "Latitude from -90 to 90, longitude from -180 to 180. Works offline.";

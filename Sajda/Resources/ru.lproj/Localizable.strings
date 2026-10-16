@@ -106,7 +106,7 @@
 "settings.offsets" = "Ручная корректировка";
 "settings.section.alarm" = "Будильник";
 "settings.delay" = "Задержка";
-"settings.delay.footer" = "В момент наступления времени приходит уведомление. Через выбранную задержку включается громкий сигнал.";
+"settings.delay.footer" = "В момент наступления времени приходит уведомление. Через выбранную задержку включается сигнал на максимальной громкости.";
 "settings.volume" = "Громкость";
 "settings.sound" = "Звук";
 "settings.sound.preview" = "Прослушать";
@@ -140,3 +140,17 @@
 "onboarding.p3.title" = "Выключение через камеру";
 "onboarding.p3.text" = "Сфотографируйте коврик или раковину — распознавание на устройстве.";
 "onboarding.start" = "Разрешить и начать";
+
+/* Ручной выбор места */
+"location.prompt.manual" = "Выбрать город вручную";
+"location.current" = "Текущее";
+"location.useCurrent" = "Определить автоматически";
+"location.search" = "Поиск города";
+"location.search.placeholder" = "Например, Казань";
+"location.search.empty" = "Ничего не найдено";
+"location.search.error" = "Поиск недоступен. Проверьте интернет или введите координаты.";
+"location.coordinates" = "Координаты";
+"location.latitude" = "Широта, например 55.7961";
+"location.longitude" = "Долгота, например 49.1064";
+"location.coordinates.save" = "Сохранить координаты";
+"location.coordinates.footer" = "Широта от -90 до 90, долгота от -180 до 180. Работает без интернета.";
