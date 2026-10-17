@@ -56,6 +56,17 @@ enum AlarmPolicy {
         return recentEmergencyUses(uses, now: now).min()?.addingTimeInterval(emergencyPeriod)
     }
 
+    // MARK: - Выключение будильника отдельных намазов
+
+    /// Сколько намазов можно выключить тумблером без испытания.
+    static let freeDisabledPrayersLimit = 1
+
+    /// true, если выключение будильника этого намаза превысит лимит и требует испытания.
+    static func disablingNeedsChallenge(_ prayer: Prayer, settings: AppSettings) -> Bool {
+        let othersOff = Prayer.allCases.filter { $0 != prayer && !settings.isAlarmEnabled($0) }.count
+        return othersOff >= freeDisabledPrayersLimit
+    }
+
     // MARK: - Блокировка ослабления настроек
 
     /// true, если звонит будильник или до ближайшего меньше часа.

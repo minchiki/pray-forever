@@ -71,4 +71,14 @@ extension AlarmCoordinator {
             change()
         }
     }
+
+    /// Включает или выключает будильник намаза. Без испытания можно выключить только один намаз.
+    func setAlarm(_ prayer: Prayer, enabled: Bool, pending: Binding<GuardedChange?>) {
+        let change = { [store] in store.update { $0.alarmEnabled[prayer.rawValue] = enabled } }
+        if !enabled && AlarmPolicy.disablingNeedsChallenge(prayer, settings: store.settings) {
+            pending.wrappedValue = GuardedChange(apply: change)
+        } else {
+            perform(weakening: !enabled, pending: pending, change)
+        }
+    }
 }

@@ -113,6 +113,7 @@
 "settings.offsets" = "Manual adjustment";
 "settings.section.alarm" = "Alarm";
 "settings.delay" = "Delay";
+"settings.alarmLimit.footer" = "Only one prayer's alarm can be turned off freely. Turning off more requires the challenge.";
 "settings.delay.footer" = "You get a notification when the prayer time begins. After the delay, the alarm starts at maximum volume.";
 "settings.volume" = "Volume";
 "settings.sound" = "Sound";

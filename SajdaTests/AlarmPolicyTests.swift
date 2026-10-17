@@ -62,6 +62,22 @@ final class AlarmPolicyTests: XCTestCase {
         XCTAssertEqual(AlarmPolicy.emergencyRemaining(uses: uses, now: now.addingTimeInterval(5.5 * day)), 1)
     }
 
+    func testFirstPrayerCanBeDisabledWithoutChallenge() {
+        XCTAssertFalse(AlarmPolicy.disablingNeedsChallenge(.isha, settings: AppSettings()))
+    }
+
+    func testSecondDisabledPrayerNeedsChallenge() {
+        let settings = AppSettings().with { $0.alarmEnabled[Prayer.fajr.rawValue] = false }
+
+        XCTAssertTrue(AlarmPolicy.disablingNeedsChallenge(.isha, settings: settings))
+    }
+
+    func testAlreadyDisabledPrayerDoesNotCountAgainstItself() {
+        let settings = AppSettings().with { $0.alarmEnabled[Prayer.fajr.rawValue] = false }
+
+        XCTAssertFalse(AlarmPolicy.disablingNeedsChallenge(.fajr, settings: settings))
+    }
+
     func testChangesLockedWithinHourBeforeAlarm() {
         XCTAssertTrue(AlarmPolicy.changesLocked(instances: [instance("a", alarmInMinutes: 30)],
                                                 dismissed: [], isRinging: false, now: now))

@@ -92,16 +92,17 @@ struct SettingsView: View {
         } header: {
             Text("settings.section.alarm")
         } footer: {
-            Text("settings.delay.footer")
+            VStack(alignment: .leading, spacing: 6) {
+                Text("settings.alarmLimit.footer")
+                Text("settings.delay.footer")
+            }
         }
     }
 
     private func alarmBinding(_ prayer: Prayer) -> Binding<Bool> {
         Binding(
             get: { store.settings.isAlarmEnabled(prayer) },
-            set: { value in
-                guarded(weakening: !value) { store.update { $0.alarmEnabled[prayer.rawValue] = value } }
-            }
+            set: { value in coordinator.setAlarm(prayer, enabled: value, pending: $pendingChange) }
         )
     }
 

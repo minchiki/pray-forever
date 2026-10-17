@@ -131,14 +131,13 @@ private struct TodayList: View {
                           time: times[prayer],
                           isNext: prayer == nextID && times[prayer].map { $0 > Date() } == true,
                           alarmOn: store.settings.isAlarmEnabled(prayer)) {
-                    let turningOff = store.settings.isAlarmEnabled(prayer)
-                    coordinator.perform(weakening: turningOff, pending: $pendingChange) {
-                        store.update { $0.alarmEnabled[prayer.rawValue] = !turningOff }
-                    }
+                    coordinator.setAlarm(prayer, enabled: !store.settings.isAlarmEnabled(prayer),
+                                         pending: $pendingChange)
                 }
             }
         }
         .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
+        .guardedChallenge($pendingChange)
     }
 }
 
