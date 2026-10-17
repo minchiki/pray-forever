@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__plugin_playwright_playwright__browser_take_screenshot",
+      "PowerShell(Get-ChildItem *)",
+      "PowerShell(gh run view *)",
+      "PowerShell(gh run list *)",
+      "PowerShell(gh run watch *)",
+      "Bash(gh run watch *)",
+      "PowerShell(Get-Process *)",
+      "PowerShell(Select-String *)",
+      "PowerShell(Get-Content *)",
+      "mcp__claude-in-chrome__tabs_context_mcp",
+      "mcp__claude-in-chrome__find",
+      "PowerShell(Get-Item *)",
+      "PowerShell(Get-NetTCPConnection *)",
+      "PowerShell(git status *)",
+      "PowerShell(git log *)",
+      "mcp__plugin_playwright_playwright__browser_console_messages",
+      "mcp__claude-in-chrome__get_page_text",
+      "PowerShell(Test-Path *)",
+      "PowerShell(gh auth status)"
+    ]
+  }
+}
