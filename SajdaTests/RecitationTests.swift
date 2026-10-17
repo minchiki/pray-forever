@@ -9,6 +9,10 @@ final class ArabicTextTests: XCTestCase {
         XCTAssertEqual(ArabicText.normalize("الْجِنَّةِ"), "الجنه")
     }
 
+    func testStripDiacriticsKeepsLetters() {
+        XCTAssertEqual(ArabicText.stripDiacritics("الْجِنَّةِ وَالنَّاسِ"), "الجنة والناس")
+    }
+
     func testWordsSplitOnSpacesAndPunctuation() {
         XCTAssertEqual(ArabicText.words("قُلْ هُوَ، اللَّهُ  أَحَدٌ."), ["قل", "هو", "الله", "احد"])
     }
@@ -107,6 +111,42 @@ final class RecitationTrackerTests: XCTestCase {
 
         XCTAssertTrue(tracker.isComplete)
         XCTAssertEqual(tracker.skipped, [7, 8, 9, 10])
+    }
+
+    func testRecognizedRatioCountsOnlyRecognizedWords() {
+        var tracker = RecitationTracker(surah: .ikhlas)
+        XCTAssertEqual(tracker.recognizedRatio, 1)
+
+        tracker.hear("قل")
+        tracker.tick(RecitationTracker.stuckVoiceLimit, voiceActive: true, paced: false)
+
+        XCTAssertEqual(tracker.position, 2)
+        XCTAssertEqual(tracker.recognizedRatio, 0.5, accuracy: 0.001)
+    }
+
+    func testRestartFromAyahClearsLaterProgressAndIgnoresOldText() {
+        var tracker = RecitationTracker(surah: .nas)
+        tracker.hear("قل اعوذ برب الناس ملك الناس اله الناس من شر الخناس")
+        XCTAssertEqual(tracker.skipped, [10])
+
+        tracker.restart(fromAyah: 3)
+        XCTAssertEqual(tracker.position, 8)
+        XCTAssertTrue(tracker.skipped.isEmpty)
+        XCTAssertEqual(tracker.currentAyah, 3)
+
+        // Уже распознанный текст не засчитывается заново — нужно прочитать аят ещё раз.
+        tracker.hear("قل اعوذ برب الناس ملك الناس اله الناس من شر الخناس من")
+        XCTAssertEqual(tracker.position, 9)
+    }
+
+    func testContextIsTextReadBeforeCurrentSession() {
+        var tracker = RecitationTracker(surah: .ikhlas)
+        XCTAssertEqual(tracker.contextBeforeSession(), "")
+
+        tracker.hear("قل هو الله احد")
+        tracker.beginSession()
+
+        XCTAssertEqual(tracker.contextBeforeSession(), "قل هو الله أحد")
     }
 
     func testFatihaMayStartWithoutBasmala() {

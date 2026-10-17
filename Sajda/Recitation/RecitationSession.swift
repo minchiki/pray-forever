@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 /// Связывает микрофон с проверкой чтения и сообщает, чем всё закончилось.
 @MainActor
@@ -6,13 +7,21 @@ final class RecitationSession: ObservableObject {
     enum Outcome { case completed, silent }
 
     @Published private(set) var tracker: RecitationTracker
+    /// Короткое сообщение над панелью (например, «прочитайте ещё раз»).
+    @Published private(set) var notice: String?
     let listener = RecitationListener()
     var onFinish: ((Outcome) -> Void)?
 
+    /// В будильнике суру нужно действительно прочитать: если распознано меньше — читать заново.
+    static let minRecognizedRatio = 0.7
+    /// Больше стольких повторов не требуем — вдруг микрофон или распознавание плохо слышат именно этого человека.
+    static let maxStrictRetries = 2
     private static let tickInterval: TimeInterval = 0.1
+    private static let noticeDuration: UInt64 = 5_000_000_000
     private var timer: Timer?
     private var lastTick = Date()
     private var finished = false
+    private var strictRetries = 0
     private let failsOnSilence: Bool
 
     init(surah: Surah, failsOnSilence: Bool = true) {
@@ -24,6 +33,7 @@ final class RecitationSession: ObservableObject {
         guard timer == nil, !finished else { return }
         listener.contextualStrings = tracker.surah.ayat.map { ArabicText.words($0.arabic).joined(separator: " ") }
         listener.onNewSession = { [weak self] in self?.tracker.beginSession() }
+        listener.promptContext = { [weak self] in self?.tracker.contextBeforeSession() ?? "" }
         listener.onTranscript = { [weak self] text in
             guard let self, self.tracker.hear(text) else { return }
             self.checkFinished()
@@ -41,6 +51,20 @@ final class RecitationSession: ObservableObject {
         timer?.invalidate()
         timer = nil
         listener.stop()
+    }
+
+    /// Начать с выбранного аята (на тренировке — нажатием на аят).
+    func restart(fromAyah ayah: Int) {
+        guard !finished else { return }
+        tracker.restart(fromAyah: ayah)
+    }
+
+    private func show(notice text: String) {
+        notice = text
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: Self.noticeDuration)
+            if self?.notice == text { self?.notice = nil }
+        }
     }
 
     /// Секунды до повторного звонка, если человек замолчал (nil — предупреждать рано).
@@ -70,6 +94,15 @@ final class RecitationSession: ObservableObject {
         guard !finished else { return }
         let outcome: Outcome
         if tracker.isComplete {
+            // Слова засчитаны по времени, а не распознаны — похоже, суру не читали. В будильнике — заново.
+            if failsOnSilence, listener.mode == .speech, strictRetries < Self.maxStrictRetries,
+               tracker.recognizedRatio < Self.minRecognizedRatio {
+                strictRetries += 1
+                UINotificationFeedbackGenerator().notificationOccurred(.error)
+                tracker.restart(fromAyah: 0)
+                show(notice: String(localized: "recitation.retry"))
+                return
+            }
             outcome = .completed
         } else if failsOnSilence, tracker.isSilentTooLong {
             outcome = .silent

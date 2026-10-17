@@ -58,6 +58,32 @@ struct RecitationTracker {
     var currentAyah: Int { isComplete ? ayahRanges.count - 1 : words[position].ayah }
     var progress: Double { words.isEmpty ? 1 : Double(position) / Double(words.count) }
 
+    /// Доля слов, которые действительно распознаны (а не засчитаны по времени).
+    var recognizedRatio: Double {
+        let done = min(position, words.count)
+        guard done > 0 else { return 1 }
+        return Double(done - skipped.filter { $0 < done }.count) / Double(done)
+    }
+
+    /// Последние прочитанные слова перед текущим отрезком записи — подсказка модели, что звучит дальше.
+    func contextBeforeSession(maxWords: Int = 12) -> String {
+        let end = min(sessionStart, words.count)
+        let start = max(0, end - maxWords)
+        return words[start..<end].map { ArabicText.stripDiacritics($0.display) }.joined(separator: " ")
+    }
+
+    /// Начать чтение заново с аята. Уже распознанный текст сессии повторно не засчитывается.
+    mutating func restart(fromAyah ayah: Int) {
+        guard ayahRanges.indices.contains(ayah) else { return }
+        let start = ayahRanges[ayah].lowerBound
+        position = start
+        skipped = skipped.filter { $0 < start }
+        voiceTimeOnWord = 0
+        silentTime = 0
+        sessionStart = start
+        sessionOffset = lastHeardCount
+    }
+
     func state(of index: Int) -> WordState {
         if index == position { return .current }
         if index > position { return .upcoming }

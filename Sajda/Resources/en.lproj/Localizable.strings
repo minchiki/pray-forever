@@ -260,3 +260,7 @@
 "recitation.problem.denied" = "Speech recognition is not allowed: Settings → Prayer → Speech Recognition.";
 "recitation.status.preparing" = "Preparing recognition…";
 "recitation.hint.preparing" = "Loading the Quran recitation model, up to 30 seconds the first time";
+"recitation.retry" = "Too few words recognized — recite the surah again, aloud and clearly";
+"practice.hide" = "By heart";
+"practice.hide.on" = "Text hidden — recite from memory";
+"practice.tapAyah" = "Tap an ayah to start from it";

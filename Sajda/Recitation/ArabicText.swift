@@ -24,6 +24,16 @@ enum ArabicText {
         return String(out)
     }
 
+    /// Только убирает огласовки, буквы не меняет — так пишет текст модель распознавания.
+    static func stripDiacritics(_ text: String) -> String {
+        String(String.UnicodeScalarView(text.unicodeScalars.filter { scalar in
+            switch scalar.value {
+            case 0x0610...0x061A, 0x064B...0x065F, 0x0670, 0x06D6...0x06ED, 0x0640: return false
+            default: return true
+            }
+        }))
+    }
+
     /// Нормализованные слова фразы.
     static func words(_ text: String) -> [String] {
         text.components(separatedBy: CharacterSet.whitespacesAndNewlines.union(.punctuationCharacters))

@@ -16,6 +16,8 @@ struct RecitationView: View {
     @EnvironmentObject private var coordinator: AlarmCoordinator
     @StateObject private var session: RecitationSession
     @State private var completed = false
+    /// Тренировка наизусть: непрочитанные слова скрыты.
+    @State private var hideText = false
 
     private static let successDelay: UInt64 = 1_400_000_000
 
@@ -37,6 +39,7 @@ struct RecitationView: View {
                 ayatList
                     .safeAreaInset(edge: .bottom, spacing: 0) {
                         RecitationStatusPanel(listener: session.listener,
+                                              notice: session.notice,
                                               countdown: session.silenceCountdown,
                                               ayahText: ayahProgressText,
                                               showsDiagnostics: practice != nil)
@@ -79,6 +82,19 @@ struct RecitationView: View {
                         }
                         .accessibilityLabel(Text("practice.close"))
                         Spacer()
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.2)) { hideText.toggle() }
+                        } label: {
+                            Label("practice.hide", systemImage: hideText ? "eye.slash" : "eye")
+                                .font(.footnote.weight(.semibold))
+                                .padding(.horizontal, 10)
+                                .frame(minHeight: 32)
+                                .background(Capsule().fill(hideText ? RecitationTheme.accent.opacity(0.15)
+                                                                    : Color(.tertiarySystemFill)))
+                                .foregroundStyle(hideText ? RecitationTheme.accent : Color.primary)
+                        }
+                        .frame(minHeight: 44)
+                        .accessibilityAddTraits(hideText ? .isSelected : [])
                     }
                 }
             }
@@ -86,6 +102,11 @@ struct RecitationView: View {
                 .tint(RecitationTheme.accent)
                 .animation(.easeOut(duration: 0.25), value: tracker.progress)
                 .accessibilityLabel(Text(ayahProgressText))
+            if practice != nil {
+                Text(LocalizedStringKey(hideText ? "practice.hide.on" : "practice.tapAyah"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .padding(.horizontal, 16)
         .padding(.top, 8)
@@ -106,8 +127,16 @@ struct RecitationView: View {
                     ForEach(Array(surah.ayat.enumerated()), id: \.offset) { index, ayah in
                         AyahCard(ayah: ayah,
                                  states: tracker.ayahRanges[index].map(tracker.state(of:)),
-                                 isCurrent: index == tracker.currentAyah && !tracker.isComplete)
+                                 isCurrent: index == tracker.currentAyah && !tracker.isComplete,
+                                 hidesUnread: hideText)
                             .id(index)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                // На тренировке можно начать с любого аята.
+                                guard practice != nil else { return }
+                                UISelectionFeedbackGenerator().selectionChanged()
+                                session.restart(fromAyah: index)
+                            }
                     }
                 }
                 .padding(.horizontal, 16)
@@ -208,6 +237,7 @@ private struct AyahCard: View {
     let ayah: Ayah
     let states: [RecitationTracker.WordState]
     let isCurrent: Bool
+    let hidesUnread: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -217,7 +247,8 @@ private struct AyahCard: View {
                 .foregroundStyle(isCurrent ? RecitationTheme.accent : .secondary)
             RightToLeftFlow(spacing: 4, lineSpacing: 8, alignment: .trailing) {
                 ForEach(Array(cells.enumerated()), id: \.offset) { _, cell in
-                    WordCell(arabic: cell.arabic, transliteration: cell.transliteration, state: cell.state)
+                    WordCell(arabic: cell.arabic, transliteration: cell.transliteration, state: cell.state,
+                             hidden: hidesUnread && (cell.state == .upcoming || cell.state == .current))
                 }
             }
             .frame(maxWidth: .infinity)
@@ -247,6 +278,7 @@ private struct WordCell: View {
     let arabic: String
     let transliteration: String
     let state: RecitationTracker.WordState?
+    var hidden = false
 
     var body: some View {
         VStack(spacing: 1) {
@@ -259,6 +291,8 @@ private struct WordCell: View {
                 .lineLimit(1)
         }
         .fixedSize()
+        // Наизусть: слово скрыто серой плашкой того же размера, пока его не прочитают.
+        .redacted(reason: hidden ? .placeholder : [])
         .padding(.horizontal, 5)
         .padding(.vertical, 3)
         .background(
@@ -343,6 +377,7 @@ private struct RightToLeftFlow: Layout {
 /// Нижняя панель: микрофон, подсказка, предупреждение о тишине, на тренировке — что услышано.
 private struct RecitationStatusPanel: View {
     @ObservedObject var listener: RecitationListener
+    let notice: String?
     let countdown: Int?
     let ayahText: String
     let showsDiagnostics: Bool
@@ -360,6 +395,12 @@ private struct RecitationStatusPanel: View {
                     .font(.caption.weight(.medium))
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
+            }
+            if let notice {
+                Label(notice, systemImage: "arrow.counterclockwise")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(RecitationTheme.accent)
+                    .transition(.opacity)
             }
             if showsDiagnostics { diagnostics }
             if let countdown {
@@ -380,6 +421,7 @@ private struct RecitationStatusPanel: View {
         .padding(.horizontal, 16)
         .padding(.bottom, 8)
         .animation(.easeInOut(duration: 0.2), value: countdown != nil)
+        .animation(.easeInOut(duration: 0.2), value: notice)
     }
 
     @ViewBuilder

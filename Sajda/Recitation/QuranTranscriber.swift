@@ -37,11 +37,15 @@ actor QuranTranscriber {
     }
 
     /// Текст отрезка записи (16 кГц, моно). nil — модель не загружена или распознавание не удалось.
-    func transcribe(_ samples: [Float]) async -> String? {
+    /// - Parameter context: уже прочитанный текст перед отрезком, как «предыдущая речь» для Whisper.
+    func transcribe(_ samples: [Float], context: String = "") async -> String? {
         guard let whisper, !samples.isEmpty else { return nil }
-        let options = DecodingOptions(language: "ar", temperature: 0, temperatureFallbackCount: 0,
+        var options = DecodingOptions(language: "ar", temperature: 0, temperatureFallbackCount: 0,
                                       usePrefillPrompt: true, skipSpecialTokens: true,
                                       withoutTimestamps: true, suppressBlank: true)
+        if !context.isEmpty, let tokens = whisper.tokenizer?.encode(text: " " + context), !tokens.isEmpty {
+            options.promptTokens = tokens
+        }
         guard let results = try? await whisper.transcribe(audioArray: samples, decodeOptions: options) else {
             return nil
         }
