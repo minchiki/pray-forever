@@ -23,10 +23,35 @@ enum TaskKind: String, CaseIterable, Codable, Identifiable {
 }
 
 enum AlarmSound: String, CaseIterable, Codable, Identifiable {
-    case pulse, bell, siren
+    case pulse, bell, siren, clock, smoke, klaxon, hilo, glitch, buzzer
     var id: String { rawValue }
     var fileName: String { "alarm_\(rawValue).wav" }
     var localizedName: String { NSLocalizedString("sound.\(rawValue)", comment: "") }
+}
+
+/// Какую суру нужно прочитать вслух после фото.
+enum RecitationChoice: String, CaseIterable, Codable, Identifiable {
+    case off, random, fatiha, ikhlas, falaq, nas, kawthar, asr, kafirun
+    var id: String { rawValue }
+
+    var localizedName: String {
+        switch self {
+        case .off: return NSLocalizedString("recitation.off", comment: "")
+        case .random: return NSLocalizedString("recitation.random", comment: "")
+        default: return surah?.localizedName ?? rawValue
+        }
+    }
+
+    /// Конкретная сура (для `.random` — nil, её выбирает `pick()`).
+    var surah: Surah? { Surah(rawValue: rawValue) }
+
+    func pick() -> Surah? {
+        switch self {
+        case .off: return nil
+        case .random: return Surah.allCases.randomElement()
+        default: return surah
+        }
+    }
 }
 
 struct SavedLocation: Codable, Equatable {
@@ -46,6 +71,8 @@ struct AppSettings: Codable, Equatable {
     var delayMinutes: Int = 5
     var sound: AlarmSound = .pulse
     var task: TaskKind = .any
+    /// После фото нужно прочитать суру вслух.
+    var recitation: RecitationChoice = .fatiha
     var notifyAtPrayerTime: Bool = true
     var keepAlive: Bool = true
     /// Проверка «не уснул» через 5 минут после выполненного задания.
@@ -82,6 +109,7 @@ struct AppSettings: Codable, Equatable {
         delayMinutes = (try? c.decodeIfPresent(Int.self, forKey: .delayMinutes)) ?? d.delayMinutes
         sound = (try? c.decodeIfPresent(AlarmSound.self, forKey: .sound)) ?? d.sound
         task = (try? c.decodeIfPresent(TaskKind.self, forKey: .task)) ?? d.task
+        recitation = (try? c.decodeIfPresent(RecitationChoice.self, forKey: .recitation)) ?? d.recitation
         notifyAtPrayerTime = (try? c.decodeIfPresent(Bool.self, forKey: .notifyAtPrayerTime)) ?? d.notifyAtPrayerTime
         keepAlive = (try? c.decodeIfPresent(Bool.self, forKey: .keepAlive)) ?? d.keepAlive
         wakeCheck = (try? c.decodeIfPresent(Bool.self, forKey: .wakeCheck)) ?? d.wakeCheck

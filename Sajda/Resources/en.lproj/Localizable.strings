@@ -1,5 +1,5 @@
 /* Common */
-"app.name" = "pray.forever";
+"app.name" = "Prayer";
 "common.in" = "in %@";
 "common.minutes" = "%d min";
 "common.min" = "min";
@@ -45,6 +45,12 @@
 "sound.pulse" = "Pulse";
 "sound.bell" = "Bell";
 "sound.siren" = "Siren";
+"sound.clock" = "Alarm clock";
+"sound.smoke" = "Smoke detector";
+"sound.klaxon" = "Klaxon";
+"sound.hilo" = "Hi-lo siren";
+"sound.glitch" = "Glitch";
+"sound.buzzer" = "Buzzer";
 
 /* Notifications */
 "notif.prayer.body.alarm" = "Prayer time has begun. Alarm in %d min.";
@@ -53,7 +59,7 @@
 "notif.alarm.body" = "Open the app and complete the task to stop the alarm.";
 "notice.killed.ringing.title" = "Alarm is still on";
 "notice.killed.ringing.body" = "It will keep ringing. Open the app and complete the task.";
-"notice.killed.title" = "Keep pray.forever running";
+"notice.killed.title" = "Keep Prayer running";
 "notice.killed.body" = "When the app stays in the background, the alarm is louder and more reliable.";
 
 /* AlarmKit */
@@ -81,6 +87,7 @@
 "camera.denied" = "No camera access. Allow it in iOS Settings to complete the task.";
 "camera.unavailable" = "Camera unavailable.";
 "verify.success" = "Task complete";
+"verify.photoOk" = "Photo accepted — now recite the surah";
 "verify.retry" = "Try again — the alarm keeps ringing.";
 "verify.tooDark" = "Too dark";
 "verify.tooBright" = "Too bright";
@@ -138,7 +145,7 @@
 "onboarding.p2.title" = "Persistent alarm";
 "onboarding.p2.text" = "A notification when the time begins, then a loud alarm.";
 "onboarding.p3.title" = "Turn off with the camera";
-"onboarding.p3.text" = "Photograph your rug or a sink — recognition runs on device.";
+"onboarding.p3.text" = "Photograph your rug or a sink, then recite a surah aloud.";
 "onboarding.start" = "Allow and start";
 
 /* Manual location */
@@ -197,7 +204,7 @@
 /* Widget */
 "widget.name" = "Prayer times";
 "widget.description" = "Next prayer and today's schedule.";
-"widget.noLocation" = "Open pray.forever and set your city";
+"widget.noLocation" = "Open Prayer and set your city";
 "widget.noLocation.short" = "Set your city";
 
 /* Wake check and protection */
@@ -212,3 +219,30 @@
 "emergency.remaining" = "Left this week: %d of %d";
 "emergency.limit" = "Emergency stop limit reached";
 "emergency.next" = "Next one available %@";
+
+/* Surah recitation */
+"settings.recitation" = "Surah recitation";
+"settings.recitation.footer" = "After the photo, recite a surah aloud — words light up as you read. The alarm stays quiet while you read. Stop for 30 seconds and it rings again.";
+"recitation.off" = "Off";
+"recitation.random" = "Random surah";
+"surah.fatiha" = "Al-Fatiha";
+"surah.ikhlas" = "Al-Ikhlas";
+"surah.falaq" = "Al-Falaq";
+"surah.nas" = "An-Nas";
+"surah.kawthar" = "Al-Kawthar";
+"surah.asr" = "Al-Asr";
+"surah.kafirun" = "Al-Kafirun";
+"recitation.subtitle" = "Surah %d · %d ayahs";
+"recitation.ayah" = "Ayah %d of %d";
+"recitation.legend.read" = "read";
+"recitation.legend.skipped" = "not recognized";
+"recitation.legend.next" = "next";
+"recitation.silence" = "Keep reading aloud — the alarm returns in %d s";
+"recitation.status.starting" = "Starting the microphone…";
+"recitation.status.listening" = "Listening…";
+"recitation.status.read" = "Read aloud";
+"recitation.status.noMic" = "No microphone access";
+"recitation.hint.starting" = "Allow the microphone so your reading can be checked";
+"recitation.hint.speech" = "Words light up as you read";
+"recitation.hint.voice" = "Arabic recognition unavailable — your voice is counted";
+"recitation.hint.manual" = "Follow the highlight. Allow the microphone in Settings";

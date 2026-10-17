@@ -46,6 +46,7 @@ targets:
       - path: Sajda/Models/Prayer.swift
       - path: Sajda/Models/AppSettings.swift
       - path: Sajda/Models/SharedStorage.swift
+      - path: Sajda/Recitation/Surah.swift
       - path: Sajda/Services/PrayerTimeCalculator.swift
       - path: Sajda/Resources
         includes:
@@ -56,7 +57,7 @@ targets:
     info:
       path: SajdaWidget/Info.plist
       properties:
-        CFBundleDisplayName: pray.forever
+        CFBundleDisplayName: Prayer
         CFBundleDevelopmentRegion: ru
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)

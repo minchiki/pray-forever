@@ -70,12 +70,93 @@ def siren(total=28.0):
     return normalize(s)
 
 
+def square(phase):
+    return np.sign(np.sin(phase))
+
+
+def saw(phase):
+    return 2 * ((phase / (2 * math.pi)) % 1) - 1
+
+
+def loop_to(phrase, total):
+    reps = int(total * SR / len(phrase)) + 1
+    return normalize(np.tile(phrase, reps)[: int(total * SR)])
+
+
+def alarm_clock(total=28.0):
+    """Механический будильник: молоточек бьёт по двум чашкам ~18 раз в секунду."""
+    t = np.arange(int(1.0 * SR)) / SR
+    clapper = (np.sin(2 * math.pi * 18 * t) > 0).astype(float)
+    cups = np.sin(2 * math.pi * 2350 * t) + 0.8 * np.sin(2 * math.pi * 2780 * t) + 0.3 * np.sin(2 * math.pi * 4700 * t)
+    ring = cups * (0.35 + 0.65 * clapper)
+    phrase = np.concatenate([ring, np.zeros(int(0.25 * SR))])
+    return loop_to(phrase, total)
+
+
+def smoke(total=28.0):
+    """Пожарный датчик: три пронзительных писка 3.1 кГц, пауза (шаблон T3)."""
+    beep = np.concatenate([tone(3150, 0.5, (1, 0.2)), np.zeros(int(0.15 * SR))])
+    phrase = np.concatenate([beep] * 3 + [np.zeros(int(0.6 * SR))])
+    return loop_to(phrase, total)
+
+
+def klaxon(total=28.0):
+    """Корабельный ревун «а-у-га»: хриплый квадрат с подъёмом тона."""
+    n = int(1.1 * SR)
+    t = np.arange(n) / SR
+    freq = 330 + 260 * np.minimum(1, t / 0.35)
+    phase = 2 * math.pi * np.cumsum(freq) / SR
+    honk = (square(phase) + 0.6 * saw(phase * 1.01) + 0.3 * square(phase * 1.5)) * envelope(n, 0.01, 0.08)
+    phrase = np.concatenate([honk, np.zeros(int(0.2 * SR))])
+    return loop_to(phrase, total)
+
+
+def hilo(total=28.0):
+    """Двухтональная европейская сирена «ни-на»."""
+    half = int(0.45 * SR)
+    t = np.arange(half) / SR
+    hi = (square(2 * math.pi * 960 * t) + 0.5 * np.sin(2 * math.pi * 1920 * t)) * envelope(half, 0.003, 0.003)
+    lo = (square(2 * math.pi * 640 * t) + 0.5 * np.sin(2 * math.pi * 1280 * t)) * envelope(half, 0.003, 0.003)
+    return loop_to(np.concatenate([hi, lo]), total)
+
+
+def glitch(total=28.0):
+    """Хаотичные цифровые всплески случайной высоты — к ним невозможно привыкнуть."""
+    rng = np.random.default_rng(7)
+    out, length = [], 0
+    while length < total * SR:
+        n = int(rng.uniform(0.04, 0.16) * SR)
+        t = np.arange(n) / SR
+        f = rng.choice([523, 740, 1046, 1480, 2093, 2960, 3520])
+        burst = square(2 * math.pi * f * t) * envelope(n, 0.002, 0.004)
+        gap = np.zeros(int(rng.uniform(0.0, 0.07) * SR))
+        out += [burst, gap]
+        length += n + len(gap)
+    return normalize(np.concatenate(out)[: int(total * SR)])
+
+
+def buzzer(total=28.0):
+    """Резкий зуммер «неверный ответ»: пила с биением, длинные гудки."""
+    n = int(0.7 * SR)
+    t = np.arange(n) / SR
+    phase = 2 * math.pi * 415 * t
+    buzz = (saw(phase) + saw(phase * 1.06) + 0.5 * square(phase * 2)) * envelope(n, 0.005, 0.03)
+    phrase = np.concatenate([buzz, np.zeros(int(0.12 * SR)), buzz, np.zeros(int(0.45 * SR))])
+    return loop_to(phrase, total)
+
+
+SOUNDS = {
+    "pulse": pulse, "bell": bell, "siren": siren,
+    "clock": alarm_clock, "smoke": smoke, "klaxon": klaxon,
+    "hilo": hilo, "glitch": glitch, "buzzer": buzzer,
+}
+
+
 def gen_sounds():
     out_dir = os.path.join(APP, "Resources", "Sounds")
     os.makedirs(out_dir, exist_ok=True)
-    write_wav(os.path.join(out_dir, "alarm_pulse.wav"), pulse())
-    write_wav(os.path.join(out_dir, "alarm_bell.wav"), bell())
-    write_wav(os.path.join(out_dir, "alarm_siren.wav"), siren())
+    for name, make in SOUNDS.items():
+        write_wav(os.path.join(out_dir, f"alarm_{name}.wav"), make())
     write_wav(os.path.join(out_dir, "silence.wav"), np.zeros(SR * 2))
 
 
@@ -286,6 +367,11 @@ def gen_icons():
 
 
 if __name__ == "__main__":
+    # python gen_assets.py <root> sounds — только звуки; python gen_assets.py <root> [photo] — всё.
+    if len(sys.argv) > 2 and sys.argv[2] == "sounds":
+        gen_sounds()
+        print("ok")
+        sys.exit(0)
     if len(sys.argv) > 2:
         PHOTO = sys.argv[2]
     gen_sounds()

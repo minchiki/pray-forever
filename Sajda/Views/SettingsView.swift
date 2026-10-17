@@ -135,11 +135,28 @@ struct SettingsView: View {
             } label: {
                 Text("settings.references")
             }
+            Picker("settings.recitation", selection: recitationBinding) {
+                ForEach(RecitationChoice.allCases) { Text($0.localizedName).tag($0) }
+            }
         } header: {
             Text("settings.section.task")
         } footer: {
-            Text("settings.task.footer")
+            VStack(alignment: .leading, spacing: 6) {
+                Text("settings.task.footer")
+                Text("settings.recitation.footer")
+            }
         }
+    }
+
+    /// Отключить чтение суры — ослабление будильника.
+    private var recitationBinding: Binding<RecitationChoice> {
+        Binding(
+            get: { store.settings.recitation },
+            set: { value in
+                let weakening = value == .off && store.settings.recitation != .off
+                guarded(weakening: weakening) { store.update { $0.recitation = value } }
+            }
+        )
     }
 
     // MARK: - Надёжность

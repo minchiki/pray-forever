@@ -1,5 +1,5 @@
 /* Общее */
-"app.name" = "pray.forever";
+"app.name" = "Prayer";
 "common.in" = "через %@";
 "common.minutes" = "%d мин";
 "common.min" = "мин";
@@ -45,6 +45,12 @@
 "sound.pulse" = "Пульс";
 "sound.bell" = "Колокол";
 "sound.siren" = "Сирена";
+"sound.clock" = "Механический будильник";
+"sound.smoke" = "Пожарная тревога";
+"sound.klaxon" = "Ревун";
+"sound.hilo" = "Сирена «ни-на»";
+"sound.glitch" = "Глитч";
+"sound.buzzer" = "Зуммер";
 
 /* Уведомления */
 "notif.prayer.body.alarm" = "Наступило время намаза. Будильник через %d мин.";
@@ -53,7 +59,7 @@
 "notif.alarm.body" = "Откройте приложение и выполните задание, чтобы выключить сигнал.";
 "notice.killed.ringing.title" = "Будильник не выключен";
 "notice.killed.ringing.body" = "Сигнал продолжится. Откройте приложение и выполните задание.";
-"notice.killed.title" = "Не закрывайте pray.forever";
+"notice.killed.title" = "Не закрывайте Prayer";
 "notice.killed.body" = "Когда приложение работает в фоне, будильник звучит громче и надёжнее.";
 
 /* AlarmKit */
@@ -81,6 +87,7 @@
 "camera.denied" = "Нет доступа к камере. Разрешите его в настройках iOS, чтобы выполнить задание.";
 "camera.unavailable" = "Камера недоступна.";
 "verify.success" = "Задание выполнено";
+"verify.photoOk" = "Фото засчитано — теперь прочитайте суру";
 "verify.retry" = "Переснимите — сигнал продолжится.";
 "verify.tooDark" = "Слишком темно";
 "verify.tooBright" = "Слишком светло";
@@ -138,7 +145,7 @@
 "onboarding.p2.title" = "Настойчивый сигнал";
 "onboarding.p2.text" = "Уведомление в начале времени, затем громкий будильник.";
 "onboarding.p3.title" = "Выключение через камеру";
-"onboarding.p3.text" = "Сфотографируйте коврик или раковину — распознавание на устройстве.";
+"onboarding.p3.text" = "Сфотографируйте коврик или раковину и прочитайте суру вслух.";
 "onboarding.start" = "Разрешить и начать";
 
 /* Ручной выбор места */
@@ -197,7 +204,7 @@
 /* Виджет */
 "widget.name" = "Время намаза";
 "widget.description" = "Ближайший намаз и расписание на сегодня.";
-"widget.noLocation" = "Откройте pray.forever и укажите город";
+"widget.noLocation" = "Откройте Prayer и укажите город";
 "widget.noLocation.short" = "Укажите город";
 
 /* Проверка «не уснул» и защита */
@@ -212,3 +219,30 @@
 "emergency.remaining" = "Осталось на этой неделе: %d из %d";
 "emergency.limit" = "Лимит аварийных отключений исчерпан";
 "emergency.next" = "Следующее будет доступно %@";
+
+/* Чтение суры */
+"settings.recitation" = "Чтение суры";
+"settings.recitation.footer" = "После фото нужно прочитать суру вслух — слова подсвечиваются по мере чтения. Пока вы читаете, сигнал молчит. Замолчите на 30 секунд — он зазвонит снова.";
+"recitation.off" = "Не читать";
+"recitation.random" = "Случайная сура";
+"surah.fatiha" = "Аль-Фатиха";
+"surah.ikhlas" = "Аль-Ихлас";
+"surah.falaq" = "Аль-Фаляк";
+"surah.nas" = "Ан-Нас";
+"surah.kawthar" = "Аль-Каусар";
+"surah.asr" = "Аль-Аср";
+"surah.kafirun" = "Аль-Кяфирун";
+"recitation.subtitle" = "Сура %d · аятов: %d";
+"recitation.ayah" = "Аят %d из %d";
+"recitation.legend.read" = "прочитано";
+"recitation.legend.skipped" = "не распознано";
+"recitation.legend.next" = "дальше";
+"recitation.silence" = "Читайте вслух — сигнал включится через %d с";
+"recitation.status.starting" = "Включаю микрофон…";
+"recitation.status.listening" = "Слушаю…";
+"recitation.status.read" = "Читайте вслух";
+"recitation.status.noMic" = "Нет доступа к микрофону";
+"recitation.hint.starting" = "Разрешите микрофон, чтобы проверять чтение";
+"recitation.hint.speech" = "Слова подсвечиваются по мере чтения";
+"recitation.hint.voice" = "Арабское распознавание недоступно — засчитывается голос";
+"recitation.hint.manual" = "Читайте за подсветкой. Разрешите микрофон в настройках";

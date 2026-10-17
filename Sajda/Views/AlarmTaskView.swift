@@ -1,6 +1,7 @@
 import SwiftUI
 
 /// Полноэкранное задание: звук играет, пока камера не распознает коврик или раковину.
+/// Затем, если включено, нужно прочитать суру вслух.
 struct AlarmTaskView: View {
     let alarm: AlarmInstance
 
@@ -15,6 +16,27 @@ struct AlarmTaskView: View {
     private let verifier = ObjectVerifier()
 
     var body: some View {
+        Group {
+            if let surah = coordinator.recitation {
+                RecitationView(surah: surah, alarm: alarm)
+                    .transition(.opacity)
+            } else {
+                photoTask
+            }
+        }
+        .animation(.easeInOut(duration: 0.3), value: coordinator.recitation)
+        .onChange(of: coordinator.recitation) { surah in
+            if surah == nil {
+                // Чтение сорвалось — снова фото.
+                result = nil
+                camera.start()
+            } else {
+                camera.stop()
+            }
+        }
+    }
+
+    private var photoTask: some View {
         ZStack {
             Color.black.ignoresSafeArea()
             cameraLayer
@@ -27,7 +49,7 @@ struct AlarmTaskView: View {
             if result?.isSuccess == true { successOverlay }
         }
         .statusBarHidden()
-        .onAppear { camera.start() }
+        .onAppear { if coordinator.recitation == nil { camera.start() } }
         .onDisappear { camera.stop() }
         .sheet(isPresented: $showEmergency) { emergencySheet }
     }
@@ -101,7 +123,8 @@ struct AlarmTaskView: View {
     private var successOverlay: some View {
         VStack(spacing: 16) {
             Image(systemName: "checkmark.circle.fill").font(.system(size: 72))
-            Text("verify.success").font(.title2.weight(.semibold))
+            Text(LocalizedStringKey(store.settings.recitation == .off ? "verify.success" : "verify.photoOk"))
+                .font(.title2.weight(.semibold))
         }
         .foregroundStyle(.white)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -180,7 +203,7 @@ struct AlarmTaskView: View {
                 if outcome.isSuccess {
                     UINotificationFeedbackGenerator().notificationOccurred(.success)
                     try? await Task.sleep(nanoseconds: 900_000_000)
-                    coordinator.completeTask()
+                    coordinator.photoVerified()
                 } else {
                     UINotificationFeedbackGenerator().notificationOccurred(.error)
                 }

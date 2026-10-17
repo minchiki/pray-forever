@@ -19,6 +19,8 @@ final class AlarmCoordinator: ObservableObject {
 
     /// Срабатывание, для которого показывается полноэкранное задание.
     @Published private(set) var activeAlarm: AlarmInstance?
+    /// Фото засчитано, теперь нужно прочитать эту суру вслух.
+    @Published private(set) var recitation: Surah?
     /// Проверка «не уснул», ожидающая нажатия.
     @Published private(set) var wakeCheck: AlarmInstance?
     @Published private(set) var instances: [AlarmInstance] = []
@@ -126,7 +128,8 @@ final class AlarmCoordinator: ObservableObject {
         let dismissed = Set(store.dismissedIDs().keys)
         updateWakeCheck(now: now, dismissed: dismissed)
         if let due = currentDue(now: now, dismissed: dismissed) {
-            if activeAlarm?.id != due.id || audio.mode != .ringing {
+            // Пока читают суру, сигнал молчит — иначе микрофон слышит будильник.
+            if activeAlarm?.id != due.id || (audio.mode != .ringing && recitation == nil) {
                 ring(due)
             }
         } else if let active = activeAlarm {
@@ -139,7 +142,8 @@ final class AlarmCoordinator: ObservableObject {
     }
 
     private func updateKeepAlive(hasUpcoming: Bool) {
-        guard audio.mode != .ringing else { return }
+        // Во время чтения суры сессия записывает микрофон — не трогаем её.
+        guard audio.mode != .ringing, audio.mode != .listening else { return }
         if store.settings.keepAlive && hasUpcoming {
             audio.startKeepAlive()
         } else {
@@ -151,6 +155,7 @@ final class AlarmCoordinator: ObservableObject {
 
     private func ring(_ instance: AlarmInstance) {
         let isNew = activeAlarm?.id != instance.id
+        if isNew { recitation = nil }
         activeAlarm = instance
         store.ringingInstance = instance
         audio.startRinging(sound: store.settings.sound)
@@ -222,7 +227,46 @@ final class AlarmCoordinator: ObservableObject {
         ring(AlarmInstance.test())
     }
 
-    /// Задание выполнено (фото распознано).
+    /// Фото распознано. Дальше — чтение суры, если оно включено.
+    func photoVerified() {
+        guard let active = activeAlarm, recitation == nil else { return }
+        guard let surah = store.settings.recitation.pick() else {
+            completeTask()
+            return
+        }
+        recitation = surah
+        audio.beginListening()
+        // Системный будильник не должен перебивать чтение; если чтение сорвётся, он вернётся.
+        #if canImport(AlarmKit)
+        if #available(iOS 26.0, *) {
+            SystemAlarmBridge.shared.clear(instanceID: active.id)
+        }
+        #endif
+    }
+
+    func recitationCompleted() {
+        guard recitation != nil else { return }
+        completeTask()
+    }
+
+    /// Человек замолчал или ушёл из приложения — сигнал снова звучит, задание начинается с фото.
+    func recitationFailed() {
+        guard let active = activeAlarm, recitation != nil else { return }
+        recitation = nil
+        ring(active)
+        #if canImport(AlarmKit)
+        if #available(iOS 26.0, *), !active.isTest {
+            let sound = store.settings.sound
+            Task { await SystemAlarmBridge.shared.rearmIfNeeded(instanceID: active.id, isDismissed: false, sound: sound) }
+        }
+        #endif
+    }
+
+    func appEnteredBackground() {
+        recitationFailed()
+    }
+
+    /// Задание выполнено (фото распознано, сура прочитана).
     func completeTask() {
         guard let active = activeAlarm else { return }
         if store.settings.wakeCheck, let check = AlarmPolicy.wakeCheck(after: active, completedAt: Date()) {
@@ -244,6 +288,7 @@ final class AlarmCoordinator: ObservableObject {
     private func finish(_ instance: AlarmInstance, markDismissed: Bool) {
         if markDismissed { store.markDismissed(instance.id) }
         store.ringingInstance = nil
+        recitation = nil
         activeAlarm = nil
         audio.stopRinging(keepAlive: false)
         UIApplication.shared.applicationIconBadgeNumber = 0
@@ -264,6 +309,10 @@ final class AlarmCoordinator: ObservableObject {
 
     func requestPermissions() async {
         _ = await notifications.requestAuthorization()
+        // Микрофон для чтения суры лучше разрешить заранее, а не спросонья во время будильника.
+        if store.settings.recitation != .off {
+            _ = await RecitationListener.requestPermissions()
+        }
         #if canImport(AlarmKit)
         if #available(iOS 26.0, *) {
             _ = await SystemAlarmBridge.shared.requestAuthorization()

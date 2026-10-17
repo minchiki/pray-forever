@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>ru</string>
 	<key>CFBundleDisplayName</key>
-	<string>pray.forever</string>
+	<string>Prayer</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -31,6 +31,14 @@
 	<false/>
 	<key>NSCameraUsageDescription</key>
 	<string>Камера нужна, чтобы сфотографировать коврик или место для омовения и выключить будильник.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Микрофон нужен, чтобы проверить чтение суры при выключении будильника.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Распознавание речи сверяет прочитанное с текстом суры. Когда возможно — на устройстве.</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>AmiriQuran-Regular.ttf</string>
+	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Геолокация нужна для точного расчёта времени намаза.</string>
 	<key>NSAlarmKitUsageDescription</key>

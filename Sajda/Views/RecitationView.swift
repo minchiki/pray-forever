@@ -1,0 +1,366 @@
+import SwiftUI
+import UIKit
+
+/// Второй шаг задания: прочитать суру вслух. Арабский текст с подсветкой слов и транскрипция под ним.
+struct RecitationView: View {
+    let surah: Surah
+    let alarm: AlarmInstance
+
+    @EnvironmentObject private var coordinator: AlarmCoordinator
+    @StateObject private var session: RecitationSession
+    @State private var completed = false
+
+    private static let successDelay: UInt64 = 1_400_000_000
+
+    init(surah: Surah, alarm: AlarmInstance) {
+        self.surah = surah
+        self.alarm = alarm
+        _session = StateObject(wrappedValue: RecitationSession(surah: surah))
+    }
+
+    private var tracker: RecitationTracker { session.tracker }
+
+    var body: some View {
+        ZStack {
+            RecitationTheme.background.ignoresSafeArea()
+            VStack(spacing: 0) {
+                header
+                ayatList
+                RecitationStatusPanel(listener: session.listener,
+                                      countdown: session.silenceCountdown,
+                                      ayahText: ayahProgressText)
+            }
+            if completed { successOverlay }
+        }
+        .statusBarHidden()
+        .onAppear {
+            session.onFinish = handle
+            session.start()
+        }
+        .onDisappear { session.stop() }
+    }
+
+    // MARK: - Шапка
+
+    private var header: some View {
+        VStack(spacing: 6) {
+            Text(String(format: String(localized: "recitation.subtitle"), surah.number, surah.ayat.count))
+                .font(.caption.weight(.semibold))
+                .textCase(.uppercase)
+                .tracking(1.2)
+                .foregroundStyle(RecitationTheme.gold)
+            Text(surah.arabicName)
+                .font(RecitationTheme.arabic(40))
+                .foregroundStyle(.white)
+            Text(surah.localizedName)
+                .font(.headline)
+                .foregroundStyle(.white.opacity(0.7))
+            progressBar
+                .padding(.top, 10)
+            legend
+        }
+        .padding(.horizontal, 24)
+        .padding(.top, 12)
+        .padding(.bottom, 8)
+    }
+
+    private var progressBar: some View {
+        GeometryReader { proxy in
+            ZStack(alignment: .leading) {
+                Capsule().fill(Color.white.opacity(0.12))
+                Capsule()
+                    .fill(RecitationTheme.gold)
+                    .frame(width: proxy.size.width * tracker.progress)
+            }
+        }
+        .frame(height: 6)
+        .animation(.easeOut(duration: 0.25), value: tracker.progress)
+        .accessibilityElement()
+        .accessibilityLabel(Text(ayahProgressText))
+    }
+
+    private var legend: some View {
+        HStack(spacing: 16) {
+            legendItem(color: RecitationTheme.read, text: "recitation.legend.read")
+            legendItem(color: RecitationTheme.skipped, text: "recitation.legend.skipped")
+            legendItem(color: .white.opacity(0.42), text: "recitation.legend.next")
+        }
+        .font(.caption2)
+        .foregroundStyle(.white.opacity(0.6))
+    }
+
+    private func legendItem(color: Color, text: LocalizedStringKey) -> some View {
+        HStack(spacing: 5) {
+            Circle().fill(color).frame(width: 7, height: 7)
+            Text(text)
+        }
+    }
+
+    private var ayahProgressText: String {
+        String(format: String(localized: "recitation.ayah"), tracker.currentAyah + 1, surah.ayat.count)
+    }
+
+    // MARK: - Аяты
+
+    private var ayatList: some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(spacing: 14) {
+                    if surah.showsBasmala { basmala }
+                    ForEach(Array(surah.ayat.enumerated()), id: \.offset) { index, ayah in
+                        AyahCard(ayah: ayah,
+                                 text: arabicText(forAyah: index),
+                                 isCurrent: index == tracker.currentAyah && !tracker.isComplete,
+                                 isDone: index < tracker.currentAyah || tracker.isComplete)
+                            .id(index)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+            }
+            .onChange(of: tracker.currentAyah) { ayah in
+                withAnimation(.easeInOut(duration: 0.35)) { proxy.scrollTo(ayah, anchor: .center) }
+            }
+        }
+    }
+
+    private var basmala: some View {
+        VStack(spacing: 6) {
+            Text(Surah.basmala.arabic)
+                .font(RecitationTheme.arabic(26))
+                .foregroundStyle(RecitationTheme.gold)
+            Text(Surah.basmala.transliteration)
+                .font(.footnote)
+                .foregroundStyle(.white.opacity(0.5))
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 6)
+    }
+
+    /// Каждое слово окрашено по состоянию: прочитано, пропущено, читается сейчас, впереди.
+    private func arabicText(forAyah ayah: Int) -> AttributedString {
+        let range = tracker.ayahRanges[ayah]
+        var text = AttributedString()
+        for index in range {
+            var word = AttributedString(tracker.words[index].display)
+            switch tracker.state(of: index) {
+            case .read:
+                word.foregroundColor = RecitationTheme.read
+            case .skipped:
+                word.foregroundColor = RecitationTheme.skipped
+            case .current:
+                word.foregroundColor = Color.white
+                word.backgroundColor = Color.white.opacity(0.14)
+            case .upcoming:
+                word.foregroundColor = Color.white.opacity(0.42)
+            }
+            text += word
+            if index < range.upperBound - 1 { text += AttributedString(" ") }
+        }
+        return text
+    }
+
+    // MARK: - Итог
+
+    private var successOverlay: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 72))
+                .foregroundStyle(RecitationTheme.read)
+            Text("بَارَكَ اللَّهُ فِيكَ")
+                .font(RecitationTheme.arabic(30))
+                .foregroundStyle(RecitationTheme.gold)
+            Text("verify.success")
+                .font(.title2.weight(.semibold))
+                .foregroundStyle(.white)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.black.opacity(0.75).ignoresSafeArea())
+        .transition(.opacity)
+    }
+
+    private func handle(_ outcome: RecitationSession.Outcome) {
+        switch outcome {
+        case .completed:
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            withAnimation { completed = true }
+            Task {
+                try? await Task.sleep(nanoseconds: Self.successDelay)
+                coordinator.recitationCompleted()
+            }
+        case .silent:
+            UINotificationFeedbackGenerator().notificationOccurred(.error)
+            coordinator.recitationFailed()
+        }
+    }
+}
+
+// MARK: - Компоненты
+
+enum RecitationTheme {
+    static let arabicFontName = "AmiriQuran-Regular"
+    static let gold = Color(red: 0.84, green: 0.72, blue: 0.42)
+    static let read = Color(red: 0.55, green: 0.86, blue: 0.66)
+    static let skipped = Color(red: 0.96, green: 0.68, blue: 0.33)
+    static let background = LinearGradient(
+        colors: [Color(red: 0.05, green: 0.21, blue: 0.16), Color(red: 0.02, green: 0.07, blue: 0.06)],
+        startPoint: .top, endPoint: .bottom
+    )
+
+    static func arabic(_ size: CGFloat) -> Font {
+        .custom(arabicFontName, size: size, relativeTo: .title)
+    }
+
+    /// Восточно-арабские цифры для номеров аятов.
+    static func arabicDigits(_ number: Int) -> String {
+        let digits = Array("٠١٢٣٤٥٦٧٨٩")
+        return String(String(number).compactMap { $0.wholeNumberValue.map { digits[$0] } })
+    }
+}
+
+/// Карточка аята: номер в восьмиконечной звезде, арабский текст справа, транскрипция под ним.
+private struct AyahCard: View {
+    let ayah: Ayah
+    let text: AttributedString
+    let isCurrent: Bool
+    let isDone: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 12) {
+                AyahNumberBadge(number: ayah.number, highlighted: isCurrent || isDone)
+                Text(text)
+                    .font(RecitationTheme.arabic(30))
+                    .lineSpacing(6)
+                    .multilineTextAlignment(.trailing)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Text(ayah.transliteration)
+                .font(.callout)
+                .italic()
+                .foregroundStyle(.white.opacity(isCurrent ? 0.85 : 0.45))
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(18)
+        .background(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(Color.white.opacity(isCurrent ? 0.09 : 0.035))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .stroke(RecitationTheme.gold.opacity(isCurrent ? 0.55 : 0), lineWidth: 1)
+        )
+        .animation(.easeInOut(duration: 0.25), value: isCurrent)
+    }
+}
+
+private struct AyahNumberBadge: View {
+    let number: Int
+    let highlighted: Bool
+
+    var body: some View {
+        ZStack {
+            ForEach([0.0, 45.0], id: \.self) { angle in
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                    .stroke(RecitationTheme.gold.opacity(highlighted ? 1 : 0.45), lineWidth: 1.5)
+                    .frame(width: 22, height: 22)
+                    .rotationEffect(.degrees(angle))
+            }
+            Text(RecitationTheme.arabicDigits(number))
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(.white.opacity(highlighted ? 1 : 0.6))
+        }
+        .frame(width: 34, height: 34)
+        .accessibilityHidden(true)
+    }
+}
+
+/// Нижняя панель: индикатор микрофона, подсказка и предупреждение о тишине.
+private struct RecitationStatusPanel: View {
+    @ObservedObject var listener: RecitationListener
+    let countdown: Int?
+    let ayahText: String
+
+    var body: some View {
+        VStack(spacing: 12) {
+            HStack(spacing: 14) {
+                LevelBars(level: listener.level, active: listener.voiceActive && listener.mode != .manual)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title).font(.headline)
+                    Text(subtitle).font(.footnote).opacity(0.7)
+                }
+                Spacer(minLength: 0)
+                Text(ayahText)
+                    .font(.footnote.weight(.semibold))
+                    .monospacedDigit()
+                    .foregroundStyle(RecitationTheme.gold)
+            }
+            if let countdown {
+                Label(String(format: String(localized: "recitation.silence"), countdown),
+                      systemImage: "exclamationmark.triangle.fill")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(RecitationTheme.skipped)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .transition(.opacity)
+            }
+            if listener.mode == .manual {
+                Button("common.openSettings") {
+                    if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
+                }
+                .font(.footnote.weight(.semibold))
+                .frame(minHeight: 44)
+            }
+        }
+        .foregroundStyle(.white)
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(Color.black.opacity(0.45))
+                .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .stroke(Color.white.opacity(0.08), lineWidth: 1))
+        )
+        .padding(.horizontal, 16)
+        .padding(.bottom, 12)
+        .animation(.easeInOut(duration: 0.2), value: countdown != nil)
+    }
+
+    private var title: String {
+        switch listener.mode {
+        case .starting: return String(localized: "recitation.status.starting")
+        case .speech where listener.voiceActive: return String(localized: "recitation.status.listening")
+        case .speech: return String(localized: "recitation.status.read")
+        case .voice: return String(localized: "recitation.status.read")
+        case .manual: return String(localized: "recitation.status.noMic")
+        }
+    }
+
+    private var subtitle: String {
+        switch listener.mode {
+        case .starting: return String(localized: "recitation.hint.starting")
+        case .speech: return String(localized: "recitation.hint.speech")
+        case .voice: return String(localized: "recitation.hint.voice")
+        case .manual: return String(localized: "recitation.hint.manual")
+        }
+    }
+}
+
+private struct LevelBars: View {
+    let level: Double
+    let active: Bool
+
+    private static let weights: [Double] = [0.5, 0.8, 1.0, 0.75, 0.45]
+
+    var body: some View {
+        HStack(spacing: 3) {
+            ForEach(Self.weights.indices, id: \.self) { index in
+                Capsule()
+                    .fill(active ? RecitationTheme.read : Color.white.opacity(0.35))
+                    .frame(width: 4, height: 6 + 22 * level * Self.weights[index])
+            }
+        }
+        .frame(width: 32, height: 30)
+        .animation(.easeOut(duration: 0.12), value: level)
+        .accessibilityHidden(true)
+    }
+}

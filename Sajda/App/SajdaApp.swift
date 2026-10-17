@@ -15,7 +15,9 @@ struct SajdaApp: App {
         .onChange(of: scenePhase) { phase in
             switch phase {
             case .active: coordinator.appBecameActive()
-            case .background: AlarmCoordinator.scheduleBackgroundRefresh()
+            case .background:
+                coordinator.appEnteredBackground()
+                AlarmCoordinator.scheduleBackgroundRefresh()
             default: break
             }
         }

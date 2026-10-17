@@ -5,7 +5,8 @@ import UIKit
 /// Держит приложение живым в фоне (тихий звук) и играет громкий зацикленный сигнал.
 @MainActor
 final class AlarmAudioEngine {
-    enum Mode: Equatable { case idle, keepAlive, ringing }
+    /// `.listening` — сигнал приглушён, пока человек читает суру в микрофон.
+    enum Mode: Equatable { case idle, keepAlive, ringing, listening }
 
     private(set) var mode: Mode = .idle
     private var player: AVAudioPlayer?
@@ -28,7 +29,7 @@ final class AlarmAudioEngine {
 
     /// Тихое воспроизведение, чтобы iOS не усыпляла приложение и таймер будильника работал в фоне.
     func startKeepAlive() {
-        guard mode != .ringing else { return }
+        guard mode != .ringing, mode != .listening else { return }
         guard mode != .keepAlive || player?.isPlaying != true else { return }
         do {
             try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
@@ -62,8 +63,18 @@ final class AlarmAudioEngine {
         }
     }
 
+    /// Глушит сигнал и переключает сессию на запись: микрофон не должен слышать будильник.
+    func beginListening() {
+        volumeObservation = nil
+        stopPlayer()
+        let session = AVAudioSession.sharedInstance()
+        try? session.setCategory(.playAndRecord, mode: .measurement, options: [.defaultToSpeaker])
+        try? session.setActive(true)
+        mode = .listening
+    }
+
     func stopRinging(keepAlive: Bool) {
-        guard mode == .ringing else { return }
+        guard mode == .ringing || mode == .listening else { return }
         volumeObservation = nil
         stopPlayer()
         mode = .idle
@@ -73,7 +84,7 @@ final class AlarmAudioEngine {
 
     /// Короткое прослушивание звука в настройках.
     func preview(sound: AlarmSound) {
-        guard mode != .ringing else { return }
+        guard mode != .ringing, mode != .listening else { return }
         let wasKeepAlive = mode == .keepAlive
         try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [])
         try? AVAudioSession.sharedInstance().setActive(true)
@@ -82,7 +93,7 @@ final class AlarmAudioEngine {
         player?.play()
         let previewDuration: TimeInterval = 3
         DispatchQueue.main.asyncAfter(deadline: .now() + previewDuration) { [weak self] in
-            guard let self, self.mode != .ringing else { return }
+            guard let self, self.mode != .ringing, self.mode != .listening else { return }
             self.stopPlayer()
             self.mode = .idle
             if wasKeepAlive { self.startKeepAlive() }
@@ -160,7 +171,7 @@ final class AlarmAudioEngine {
         case .keepAlive:
             try? AVAudioSession.sharedInstance().setActive(true)
             if player?.isPlaying != true { player?.play() }
-        case .idle:
+        case .idle, .listening:
             break
         }
     }

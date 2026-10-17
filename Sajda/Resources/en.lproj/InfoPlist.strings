@@ -1,4 +1,6 @@
-"CFBundleDisplayName" = "pray.forever";
+"CFBundleDisplayName" = "Prayer";
 "NSCameraUsageDescription" = "The camera is used to photograph your prayer rug or wudu area to stop the alarm.";
 "NSLocationWhenInUseUsageDescription" = "Your location is used to calculate accurate prayer times.";
 "NSAlarmKitUsageDescription" = "The alarm rings at prayer time even in silent mode.";
+"NSMicrophoneUsageDescription" = "The microphone is used to check your surah recitation when you stop the alarm.";
+"NSSpeechRecognitionUsageDescription" = "Speech recognition compares your recitation with the surah text, on device when possible.";
