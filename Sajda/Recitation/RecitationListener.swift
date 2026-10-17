@@ -18,13 +18,21 @@ final class RecitationListener: ObservableObject {
     /// Громкость для индикатора, 0...1.
     @Published private(set) var level: Double = 0
     @Published private(set) var voiceActive = false
+    /// Что распознаватель услышал в текущей сессии (показывается на тренировке).
+    @Published private(set) var transcript = ""
+    /// Почему распознавание не работает — текст ошибки iOS.
+    @Published private(set) var problem: String?
 
+    /// Ожидаемые фразы (текст суры) — подсказка распознавателю, сильно повышает точность.
+    var contextualStrings: [String] = []
     var onTranscript: ((String) -> Void)?
     /// Началась новая сессия распознавания (текст начинается заново).
     var onNewSession: (() -> Void)?
 
     private static let locale = Locale(identifier: "ar-SA")
-    private static let maxFailuresBeforeFallback = 3
+    private static let maxFailuresBeforeFallback = 4
+    /// Ошибки, которые означают «человек молчал» или «сессию отменили», а не поломку.
+    private static let benignErrorCodes: Set<Int> = [203, 216, 301, 1110]
     private static let restartDelay: UInt64 = 300_000_000
 
     private let engine = AVAudioEngine()
@@ -36,6 +44,8 @@ final class RecitationListener: ObservableObject {
     private var tapInstalled = false
     private var everHeard = false
     private var failures = 0
+    /// Сначала сервер Apple (для арабского точнее), при ошибках — распознавание на устройстве.
+    private var useOnDevice = false
     private var configObserver: NSObjectProtocol?
 
     /// Запрашивает микрофон и распознавание речи (можно вызвать заранее, при настройке).
@@ -69,6 +79,9 @@ final class RecitationListener: ObservableObject {
             mode = .speech
             startRecognition()
         } else {
+            problem = permissions.speech
+                ? String(localized: "recitation.problem.unavailable")
+                : String(localized: "recitation.problem.denied")
             mode = .voice
         }
     }
@@ -84,6 +97,7 @@ final class RecitationListener: ObservableObject {
         configObserver = nil
         voiceActive = false
         level = 0
+        transcript = ""
     }
 
     // MARK: - Микрофон
@@ -160,40 +174,56 @@ final class RecitationListener: ObservableObject {
         let request = SFSpeechAudioBufferRecognitionRequest()
         request.shouldReportPartialResults = true
         request.addsPunctuation = false
-        if recognizer.supportsOnDeviceRecognition { request.requiresOnDeviceRecognition = true }
+        request.taskHint = .dictation
+        request.contextualStrings = contextualStrings
+        request.requiresOnDeviceRecognition = useOnDevice && recognizer.supportsOnDeviceRecognition
         feed.request = request
+        transcript = ""
         onNewSession?()
-        task = Self.recognize(with: recognizer, request: request) { [weak self] text, isFinal, failed in
+        task = Self.recognize(with: recognizer, request: request) { [weak self] text, isFinal, error in
             Task { @MainActor in
-                self?.handleRecognition(text: text, isFinal: isFinal, failed: failed, request: request)
+                self?.handleRecognition(text: text, isFinal: isFinal, error: error, request: request)
             }
         }
+    }
+
+    struct RecognitionError: Sendable {
+        let code: Int
+        let message: String
     }
 
     /// Ответы распознавания приходят на фоновой очереди.
     nonisolated private static func recognize(
         with recognizer: SFSpeechRecognizer,
         request: SFSpeechAudioBufferRecognitionRequest,
-        onResult: @escaping @Sendable (String?, Bool, Bool) -> Void
+        onResult: @escaping @Sendable (String?, Bool, RecognitionError?) -> Void
     ) -> SFSpeechRecognitionTask {
         recognizer.recognitionTask(with: request) { result, error in
-            onResult(result?.bestTranscription.formattedString, result?.isFinal ?? false, error != nil)
+            let failure = error.map { RecognitionError(code: ($0 as NSError).code, message: $0.localizedDescription) }
+            onResult(result?.bestTranscription.formattedString, result?.isFinal ?? false, failure)
         }
     }
 
-    private func handleRecognition(text: String?, isFinal: Bool, failed: Bool,
+    private func handleRecognition(text: String?, isFinal: Bool, error: RecognitionError?,
                                    request: SFSpeechAudioBufferRecognitionRequest) {
         // Ответы от старой, уже заменённой сессии игнорируем.
         guard isRunning, feed.request === request else { return }
         if let text, !text.isEmpty {
             everHeard = true
             failures = 0
+            problem = nil
+            transcript = text
             onTranscript?(text)
         }
-        guard isFinal || failed else { return }
+        guard isFinal || error != nil else { return }
         task = nil
-        if failed, !everHeard { failures += 1 }
-        // Распознавание ни разу не сработало — переходим на детектор голоса.
+        if let error, !everHeard, !Self.benignErrorCodes.contains(error.code) {
+            failures += 1
+            problem = "\(error.message) (\(error.code))"
+            // Сервер недоступен (нет интернета) — пробуем на устройстве, и наоборот.
+            if recognizer?.supportsOnDeviceRecognition == true { useOnDevice.toggle() }
+        }
+        // Распознавание так и не заработало — переходим на детектор голоса.
         if failures >= Self.maxFailuresBeforeFallback {
             feed.request = nil
             mode = .voice

@@ -36,7 +36,8 @@ struct RecitationView: View {
                 ayatList
                 RecitationStatusPanel(listener: session.listener,
                                       countdown: session.silenceCountdown,
-                                      ayahText: ayahProgressText)
+                                      ayahText: ayahProgressText,
+                                      showsDiagnostics: practice != nil)
             }
             if let practice {
                 closeButton(practice.close)
@@ -122,7 +123,7 @@ struct RecitationView: View {
                     if surah.showsBasmala { basmala }
                     ForEach(Array(surah.ayat.enumerated()), id: \.offset) { index, ayah in
                         AyahCard(ayah: ayah,
-                                 text: arabicText(forAyah: index),
+                                 states: tracker.ayahRanges[index].map(tracker.state(of:)),
                                  isCurrent: index == tracker.currentAyah && !tracker.isComplete,
                                  isDone: index < tracker.currentAyah || tracker.isComplete)
                             .id(index)
@@ -137,40 +138,16 @@ struct RecitationView: View {
         }
     }
 
+    /// Басмала перед сурой: не проверяется, поэтому без подсветки.
     private var basmala: some View {
-        VStack(spacing: 6) {
-            Text(Surah.basmala.arabic)
-                .font(RecitationTheme.arabic(26))
-                .foregroundStyle(RecitationTheme.gold)
-            Text(Surah.basmala.transliteration)
-                .font(.footnote)
-                .foregroundStyle(.white.opacity(0.5))
+        RightToLeftFlow(spacing: 6, lineSpacing: 6) {
+            ForEach(Array(zip(Surah.basmala.arabicWords, Surah.basmala.transliterationWords).enumerated()),
+                    id: \.offset) { _, pair in
+                WordCell(arabic: pair.0, transliteration: pair.1, state: nil, arabicSize: 24)
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 6)
-    }
-
-    /// Каждое слово окрашено по состоянию: прочитано, пропущено, читается сейчас, впереди.
-    private func arabicText(forAyah ayah: Int) -> AttributedString {
-        let range = tracker.ayahRanges[ayah]
-        var text = AttributedString()
-        for index in range {
-            var word = AttributedString(tracker.words[index].display)
-            switch tracker.state(of: index) {
-            case .read:
-                word.foregroundColor = RecitationTheme.read
-            case .skipped:
-                word.foregroundColor = RecitationTheme.skipped
-            case .current:
-                word.foregroundColor = Color.white
-                word.backgroundColor = Color.white.opacity(0.14)
-            case .upcoming:
-                word.foregroundColor = Color.white.opacity(0.42)
-            }
-            text += word
-            if index < range.upperBound - 1 { text += AttributedString(" ") }
-        }
-        return text
     }
 
     private func closeButton(_ action: @escaping () -> Void) -> some View {
@@ -293,31 +270,25 @@ enum RecitationTheme {
     }
 }
 
-/// Карточка аята: номер в восьмиконечной звезде, арабский текст справа, транскрипция под ним.
+/// Карточка аята: номер в восьмиконечной звезде и слова справа налево, под каждым — его транскрипция.
 private struct AyahCard: View {
     let ayah: Ayah
-    let text: AttributedString
+    let states: [RecitationTracker.WordState]
     let isCurrent: Bool
     let isDone: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top, spacing: 12) {
-                AyahNumberBadge(number: ayah.number, highlighted: isCurrent || isDone)
-                Text(text)
-                    .font(RecitationTheme.arabic(30))
-                    .lineSpacing(6)
-                    .multilineTextAlignment(.trailing)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .fixedSize(horizontal: false, vertical: true)
+        HStack(alignment: .top, spacing: 10) {
+            AyahNumberBadge(number: ayah.number, highlighted: isCurrent || isDone)
+            RightToLeftFlow(spacing: 6, lineSpacing: 10) {
+                ForEach(Array(cells.enumerated()), id: \.offset) { _, cell in
+                    WordCell(arabic: cell.arabic, transliteration: cell.transliteration,
+                             state: cell.state, arabicSize: 28)
+                }
             }
-            Text(ayah.transliteration)
-                .font(.callout)
-                .italic()
-                .foregroundStyle(.white.opacity(isCurrent ? 0.85 : 0.45))
-                .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .trailing)
         }
-        .padding(18)
+        .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .fill(Color.white.opacity(isCurrent ? 0.09 : 0.035))
@@ -327,6 +298,119 @@ private struct AyahCard: View {
                 .stroke(RecitationTheme.gold.opacity(isCurrent ? 0.55 : 0), lineWidth: 1)
         )
         .animation(.easeInOut(duration: 0.25), value: isCurrent)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(ayah.transliteration))
+    }
+
+    private var cells: [(arabic: String, transliteration: String, state: RecitationTracker.WordState)] {
+        let arabic = ayah.arabicWords
+        let latin = ayah.transliterationWords
+        return arabic.indices.map { i in
+            (arabic[i], i < latin.count ? latin[i] : "", i < states.count ? states[i] : .upcoming)
+        }
+    }
+}
+
+/// Одно слово: арабский сверху, транскрипция под ним. `state == nil` — слово не проверяется (басмала).
+private struct WordCell: View {
+    let arabic: String
+    let transliteration: String
+    let state: RecitationTracker.WordState?
+    let arabicSize: CGFloat
+
+    var body: some View {
+        VStack(spacing: 2) {
+            Text(arabic)
+                .font(RecitationTheme.arabic(arabicSize))
+                .foregroundStyle(arabicColor)
+            Text(transliteration)
+                .font(.system(size: 12, weight: state == .current ? .semibold : .regular))
+                .foregroundStyle(transliterationColor)
+                .lineLimit(1)
+        }
+        .fixedSize()
+        .padding(.horizontal, 6)
+        .padding(.vertical, 4)
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(Color.white.opacity(state == .current ? 0.14 : 0))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .stroke(RecitationTheme.gold.opacity(state == .current ? 0.6 : 0), lineWidth: 1)
+        )
+        .animation(.easeOut(duration: 0.2), value: state)
+    }
+
+    private var arabicColor: Color {
+        switch state {
+        case nil: return RecitationTheme.gold
+        case .read: return RecitationTheme.read
+        case .skipped: return RecitationTheme.skipped
+        case .current: return .white
+        case .upcoming: return .white.opacity(0.42)
+        }
+    }
+
+    private var transliterationColor: Color {
+        switch state {
+        case nil: return .white.opacity(0.5)
+        case .read: return RecitationTheme.read.opacity(0.8)
+        case .skipped: return RecitationTheme.skipped.opacity(0.8)
+        case .current: return .white.opacity(0.95)
+        case .upcoming: return .white.opacity(0.35)
+        }
+    }
+}
+
+/// Переносит элементы по строкам справа налево, как арабский текст.
+private struct RightToLeftFlow: Layout {
+    var spacing: CGFloat
+    var lineSpacing: CGFloat
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let rows = arrange(subviews, maxWidth: proposal.width ?? .infinity)
+        let width = rows.map(\.width).max() ?? 0
+        let height = rows.map(\.height).reduce(0, +) + lineSpacing * CGFloat(max(0, rows.count - 1))
+        return CGSize(width: proposal.width ?? width, height: height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var y = bounds.minY
+        for row in arrange(subviews, maxWidth: bounds.width) {
+            var x = bounds.maxX
+            for item in row.items {
+                x -= item.size.width
+                subviews[item.index].place(at: CGPoint(x: x, y: y + (row.height - item.size.height) / 2),
+                                           proposal: ProposedViewSize(item.size))
+                x -= spacing
+            }
+            y += row.height + lineSpacing
+        }
+    }
+
+    private struct Row {
+        var items: [(index: Int, size: CGSize)] = []
+        var width: CGFloat = 0
+        var height: CGFloat = 0
+    }
+
+    private func arrange(_ subviews: Subviews, maxWidth: CGFloat) -> [Row] {
+        var rows: [Row] = []
+        var row = Row()
+        for index in subviews.indices {
+            let size = subviews[index].sizeThatFits(.unspecified)
+            let needed = row.items.isEmpty ? size.width : row.width + spacing + size.width
+            if !row.items.isEmpty, needed > maxWidth {
+                rows.append(row)
+                row = Row()
+            }
+            row.width = row.items.isEmpty ? size.width : row.width + spacing + size.width
+            row.height = max(row.height, size.height)
+            row.items.append((index, size))
+        }
+        if !row.items.isEmpty { rows.append(row) }
+        return rows
     }
 }
 
@@ -356,6 +440,8 @@ private struct RecitationStatusPanel: View {
     @ObservedObject var listener: RecitationListener
     let countdown: Int?
     let ayahText: String
+    /// На тренировке видно, что именно слышит распознаватель и почему он не работает.
+    let showsDiagnostics: Bool
 
     var body: some View {
         VStack(spacing: 12) {
@@ -371,6 +457,7 @@ private struct RecitationStatusPanel: View {
                     .monospacedDigit()
                     .foregroundStyle(RecitationTheme.gold)
             }
+            if showsDiagnostics { diagnostics }
             if let countdown {
                 Label(String(format: String(localized: "recitation.silence"), countdown),
                       systemImage: "exclamationmark.triangle.fill")
@@ -398,6 +485,28 @@ private struct RecitationStatusPanel: View {
         .padding(.horizontal, 16)
         .padding(.bottom, 12)
         .animation(.easeInOut(duration: 0.2), value: countdown != nil)
+    }
+
+    @ViewBuilder
+    private var diagnostics: some View {
+        if listener.mode == .speech {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text("recitation.heard")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.5))
+                Text(listener.transcript.isEmpty ? "—" : String(listener.transcript.suffix(80)))
+                    .font(RecitationTheme.arabic(18))
+                    .lineLimit(2)
+                    .multilineTextAlignment(.trailing)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+        }
+        if let problem = listener.problem {
+            Text(problem)
+                .font(.caption)
+                .foregroundStyle(RecitationTheme.skipped)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
     }
 
     private var title: String {

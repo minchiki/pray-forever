@@ -22,6 +22,7 @@ final class RecitationSession: ObservableObject {
 
     func start() {
         guard timer == nil, !finished else { return }
+        listener.contextualStrings = tracker.surah.ayat.map { ArabicText.words($0.arabic).joined(separator: " ") }
         listener.onNewSession = { [weak self] in self?.tracker.beginSession() }
         listener.onTranscript = { [weak self] text in
             guard let self, self.tracker.hear(text) else { return }

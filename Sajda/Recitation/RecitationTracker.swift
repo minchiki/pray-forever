@@ -12,6 +12,8 @@ struct RecitationTracker {
 
     /// На сколько слов вперёд можно «перепрыгнуть», если распознавание пропустило слово.
     static let lookahead = 2
+    /// Точное совпадение надёжнее, поэтому для него окно шире — распознавание иногда теряет несколько слов подряд.
+    static let exactLookahead = 5
     /// Голос слышен, а слово всё не распознаётся — засчитываем его, чтобы не застрять.
     static let stuckVoiceLimit: TimeInterval = 6
     /// Без распознавания речи слово засчитывается за это время звучания голоса.
@@ -79,11 +81,11 @@ struct RecitationTracker {
         for word in heard.dropFirst(sessionOffset) {
             guard cursor < words.count else { break }
             let base = cursor < optionalPrefix ? optionalPrefix : cursor
-            let limit = min(words.count - 1, base + Self.lookahead)
+            let fuzzyLimit = min(words.count - 1, base + Self.lookahead)
+            let exactLimit = min(words.count - 1, base + Self.exactLookahead)
             // Точное совпадение важнее нечёткого: «الحمد» не должно засчитаться как «الرحمن».
-            let window = cursor...limit
-            guard let hit = window.first(where: { words[$0].key == word })
-                ?? window.first(where: { ArabicText.matches(word, words[$0].key) }) else { continue }
+            guard let hit = (cursor...exactLimit).first(where: { words[$0].key == word })
+                ?? (cursor...fuzzyLimit).first(where: { ArabicText.matches(word, words[$0].key) }) else { continue }
             missed += Array(cursor..<hit)
             cursor = hit + 1
         }

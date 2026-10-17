@@ -43,6 +43,16 @@ final class SurahTests: XCTestCase {
         }
     }
 
+    func testEveryWordHasItsOwnTransliteration() {
+        for surah in Surah.allCases {
+            for ayah in surah.ayat + [Surah.basmala] {
+                let words = ayah.arabic.split(separator: " ").count
+                XCTAssertEqual(ayah.latin.split(separator: " ").count, words, "\(surah.rawValue) \(ayah.number)")
+                XCTAssertEqual(ayah.cyrillic.split(separator: " ").count, words, "\(surah.rawValue) \(ayah.number)")
+            }
+        }
+    }
+
     func testRecitationChoice() {
         XCTAssertNil(RecitationChoice.off.pick())
         XCTAssertNotNil(RecitationChoice.random.pick())
@@ -88,6 +98,15 @@ final class RecitationTrackerTests: XCTestCase {
         XCTAssertTrue(tracker.isComplete)
         XCTAssertEqual(tracker.skipped, [10])
         XCTAssertEqual(tracker.state(of: 10), .skipped)
+    }
+
+    func testSeveralMissedWordsDoNotBreakAlignment() {
+        var tracker = RecitationTracker(surah: .asr)
+
+        tracker.hear("والعصر ان الانسان لفي خسر الا الذين بالحق وتواصوا بالصبر")
+
+        XCTAssertTrue(tracker.isComplete)
+        XCTAssertEqual(tracker.skipped, [7, 8, 9, 10])
     }
 
     func testFatihaMayStartWithoutBasmala() {

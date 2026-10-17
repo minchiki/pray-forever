@@ -255,3 +255,6 @@
 "practice.result.hint" = "Orange words were counted by voice. Try reading a little louder and clearer.";
 "practice.again" = "Try again";
 "practice.close" = "Close";
+"recitation.heard" = "Heard:";
+"recitation.problem.unavailable" = "Arabic recognition is unavailable. Check your internet and turn on Dictation: Settings → General → Keyboard.";
+"recitation.problem.denied" = "Speech recognition is not allowed: Settings → Prayer → Speech Recognition.";
