@@ -29,8 +29,6 @@ final class RecitationListener: ObservableObject {
 
     /// Ожидаемые фразы (текст суры) — подсказка распознавателю Apple.
     var contextualStrings: [String] = []
-    /// Уже прочитанный текст перед текущим отрезком — модель Tarteel точнее продолжает его.
-    var promptContext: (() -> String)?
     var onTranscript: ((String) -> Void)?
     /// Началась новая сессия распознавания (текст начинается заново).
     var onNewSession: (() -> Void)?
@@ -231,7 +229,7 @@ final class RecitationListener: ObservableObject {
         let end = collector.count
         guard segmentHasVoice, end - transcribedUpTo >= Self.minNewAudio else { return }
         let samples = collector.prefix(end)
-        let text = await QuranTranscriber.shared.transcribe(samples, context: promptContext?() ?? "")
+        let text = await QuranTranscriber.shared.transcribe(samples)
         guard isRunning else { return }
         transcribedUpTo = end
         if let text, !ArabicText.words(text).isEmpty {

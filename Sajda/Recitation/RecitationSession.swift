@@ -33,7 +33,6 @@ final class RecitationSession: ObservableObject {
         guard timer == nil, !finished else { return }
         listener.contextualStrings = tracker.surah.ayat.map { ArabicText.words($0.arabic).joined(separator: " ") }
         listener.onNewSession = { [weak self] in self?.tracker.beginSession() }
-        listener.promptContext = { [weak self] in self?.tracker.contextBeforeSession() ?? "" }
         listener.onTranscript = { [weak self] text in
             guard let self, self.tracker.hear(text) else { return }
             self.checkFinished()
@@ -104,7 +103,7 @@ final class RecitationSession: ObservableObject {
                 return
             }
             outcome = .completed
-        } else if failsOnSilence, tracker.isSilentTooLong {
+        } else if failsOnSilence, tracker.isSilentTooLong || (listener.mode == .speech && tracker.isStalled) {
             outcome = .silent
         } else {
             return

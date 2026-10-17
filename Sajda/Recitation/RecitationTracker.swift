@@ -15,12 +15,16 @@ struct RecitationTracker {
     /// Точное совпадение надёжнее, поэтому для него окно шире — распознавание иногда теряет несколько слов подряд.
     static let exactLookahead = 5
     /// Голос слышен, а слово всё не распознаётся — засчитываем его, чтобы не застрять.
+    /// Только если перед ним два слова действительно распознаны: человек явно читает, а не говорит что попало.
     static let stuckVoiceLimit: TimeInterval = 6
+    static let recognizedBeforeAutoSkip = 2
     /// Без распознавания речи слово засчитывается за это время звучания голоса.
     static let pacedSecondsPerWord: TimeInterval = 0.6
     /// Тишина дольше этого — будильник звонит снова.
     static let silenceLimit: TimeInterval = 30
     static let silenceWarning: TimeInterval = 15
+    /// Голос звучит, а чтение не продвигается так долго — значит, читают не суру.
+    static let stallLimit: TimeInterval = 60
 
     let surah: Surah
     let words: [Word]
@@ -31,6 +35,8 @@ struct RecitationTracker {
     private(set) var position = 0
     private(set) var skipped: Set<Int> = []
     private(set) var silentTime: TimeInterval = 0
+    /// Сколько времени чтение не продвигается.
+    private(set) var stalledTime: TimeInterval = 0
     private var voiceTimeOnWord: TimeInterval = 0
     /// Распознавание выдаёт весь текст текущей сессии, поэтому сопоставляем его с позиции начала сессии.
     private var sessionStart = 0
@@ -55,6 +61,7 @@ struct RecitationTracker {
 
     var isComplete: Bool { position >= words.count }
     var isSilentTooLong: Bool { silentTime >= Self.silenceLimit }
+    var isStalled: Bool { stalledTime >= Self.stallLimit }
     var currentAyah: Int { isComplete ? ayahRanges.count - 1 : words[position].ayah }
     var progress: Double { words.isEmpty ? 1 : Double(position) / Double(words.count) }
 
@@ -65,11 +72,11 @@ struct RecitationTracker {
         return Double(done - skipped.filter { $0 < done }.count) / Double(done)
     }
 
-    /// Последние прочитанные слова перед текущим отрезком записи — подсказка модели, что звучит дальше.
-    func contextBeforeSession(maxWords: Int = 12) -> String {
-        let end = min(sessionStart, words.count)
-        let start = max(0, end - maxWords)
-        return words[start..<end].map { ArabicText.stripDiacritics($0.display) }.joined(separator: " ")
+    /// Перед текущим словом подряд распознаны настоящие слова (не пропущенные и не басмала по умолчанию).
+    private var canAutoSkip: Bool {
+        let needed = Self.recognizedBeforeAutoSkip
+        guard position >= needed else { return false }
+        return (position - needed..<position).allSatisfy { !skipped.contains($0) }
     }
 
     /// Начать чтение заново с аята. Уже распознанный текст сессии повторно не засчитывается.
@@ -80,6 +87,7 @@ struct RecitationTracker {
         skipped = skipped.filter { $0 < start }
         voiceTimeOnWord = 0
         silentTime = 0
+        stalledTime = 0
         sessionStart = start
         sessionOffset = lastHeardCount
     }
@@ -120,6 +128,7 @@ struct RecitationTracker {
         position = cursor
         voiceTimeOnWord = 0
         silentTime = 0
+        stalledTime = 0
         return true
     }
 
@@ -129,11 +138,15 @@ struct RecitationTracker {
     mutating func tick(_ dt: TimeInterval, voiceActive: Bool, paced: Bool) {
         guard !isComplete else { return }
         silentTime = voiceActive ? 0 : silentTime + dt
+        stalledTime += dt
         guard voiceActive else { return }
         voiceTimeOnWord += dt
         let limit = paced ? Self.pacedSecondsPerWord : Self.stuckVoiceLimit
         guard voiceTimeOnWord >= limit else { return }
-        if !paced { skipped.insert(position) }
+        if !paced {
+            guard canAutoSkip else { return }
+            skipped.insert(position)
+        }
         position += 1
         voiceTimeOnWord = 0
         // Уже распознанный текст не должен повторно сопоставляться с новой позиции.

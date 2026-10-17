@@ -3,11 +3,20 @@ import WhisperKit
 
 /// Распознавание чтения Корана моделью Tarteel (Whisper base, дообучен на чтении Корана), полностью на устройстве.
 /// Модель кладётся в приложение при сборке (см. .github/workflows/build.yml).
+///
+/// Модель, обученная только на Коране, на любую речь пытается ответить аятом. Поэтому каждое слово
+/// проходит проверку уверенности: слова, в которых модель не уверена, отбрасываются.
 actor QuranTranscriber {
     static let shared = QuranTranscriber()
     static let sampleRate = 16_000
 
     private static let modelFolderName = "QuranModel"
+    /// Слово засчитывается, только если модель уверена в нём хотя бы на столько (средняя вероятность токенов).
+    static let minWordProbability: Float = 0.5
+    /// Отрезок целиком отбрасывается, если модель считает его тишиной или в среднем не уверена.
+    static let maxNoSpeechProbability: Float = 0.5
+    static let minAverageLogProb: Float = -0.8
+    static let maxCompressionRatio: Float = 2.4
 
     private var whisper: WhisperKit?
     /// WhisperKit не Sendable, поэтому сам объект живёт только внутри актора, наружу — лишь результат загрузки.
@@ -36,20 +45,52 @@ actor QuranTranscriber {
         return whisper != nil
     }
 
-    /// Текст отрезка записи (16 кГц, моно). nil — модель не загружена или распознавание не удалось.
-    /// - Parameter context: уже прочитанный текст перед отрезком, как «предыдущая речь» для Whisper.
-    func transcribe(_ samples: [Float], context: String = "") async -> String? {
+    /// Уверенно распознанные слова отрезка записи (16 кГц, моно), через пробел.
+    /// nil — модель не загружена или распознавание не удалось.
+    func transcribe(_ samples: [Float]) async -> String? {
         guard let whisper, !samples.isEmpty else { return nil }
-        var options = DecodingOptions(language: "ar", temperature: 0, temperatureFallbackCount: 0,
+        // Без подсказки текстом суры: с ней модель просто «дописывает» суру, что бы ни звучало.
+        let options = DecodingOptions(language: "ar", temperature: 0, temperatureFallbackCount: 0,
                                       usePrefillPrompt: true, skipSpecialTokens: true,
                                       withoutTimestamps: true, suppressBlank: true)
-        if !context.isEmpty, let tokens = whisper.tokenizer?.encode(text: " " + context), !tokens.isEmpty {
-            options.promptTokens = tokens
-        }
         guard let results = try? await whisper.transcribe(audioArray: samples, decodeOptions: options) else {
             return nil
         }
-        return results.map(\.text).joined(separator: " ")
+        let segments = results.flatMap(\.segments)
+        guard let tokenizer = whisper.tokenizer else { return nil }
+        return segments.flatMap { confidentWords(in: $0, tokenizer: tokenizer) }.joined(separator: " ")
+    }
+
+    private func confidentWords(in segment: TranscriptionSegment, tokenizer: WhisperTokenizer) -> [String] {
+        guard segment.noSpeechProb <= Self.maxNoSpeechProbability,
+              segment.avgLogprob >= Self.minAverageLogProb,
+              segment.compressionRatio <= Self.maxCompressionRatio else { return [] }
+
+        // Вероятность каждого текстового токена (массивы идут параллельно, как в SegmentSeeker WhisperKit).
+        let special = tokenizer.specialTokens.specialTokenBegin
+        var textTokens: [Int] = []
+        var logProbs: [Float] = []
+        for (index, token) in segment.tokens.enumerated() where token < special {
+            guard index < segment.tokenLogProbs.count, let logProb = segment.tokenLogProbs[index][token] else {
+                return []
+            }
+            textTokens.append(token)
+            logProbs.append(logProb)
+        }
+
+        let split = tokenizer.splitToWordTokens(tokenIds: textTokens)
+        var cursor = 0
+        var words: [String] = []
+        for (word, tokens) in zip(split.words, split.wordTokens) {
+            let end = min(cursor + tokens.count, logProbs.count)
+            guard end > cursor else { break }
+            let meanLogProb = logProbs[cursor..<end].reduce(0, +) / Float(end - cursor)
+            cursor = end
+            if exp(meanLogProb) >= Self.minWordProbability {
+                words.append(word.trimmingCharacters(in: .whitespaces))
+            }
+        }
+        return words
     }
 
     /// Освобождает память (~150 МБ), когда чтение закончено.
