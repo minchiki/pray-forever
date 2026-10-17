@@ -4,6 +4,7 @@ struct HomeView: View {
     @EnvironmentObject private var coordinator: AlarmCoordinator
     @EnvironmentObject private var store: SettingsStore
     @State private var showSettings = false
+    @State private var showPractice = false
 
     var body: some View {
         NavigationStack {
@@ -30,6 +31,14 @@ struct HomeView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
+                    Button { showPractice = true } label: {
+                        Image(systemName: "book")
+                            .font(.system(size: 17, weight: .medium))
+                            .frame(width: 44, height: 44)
+                    }
+                    .accessibilityLabel(Text("practice.title"))
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Button { showSettings = true } label: {
                         Image(systemName: "gearshape")
                             .font(.system(size: 18, weight: .medium))
@@ -38,8 +47,13 @@ struct HomeView: View {
                     .accessibilityLabel(Text("settings.title"))
                 }
             }
-            .onChange(of: coordinator.activeAlarm) { if $0 != nil { showSettings = false } }
-            .onChange(of: coordinator.wakeCheck) { if $0 != nil { showSettings = false } }
+            .onChange(of: coordinator.activeAlarm) { if $0 != nil { showSettings = false; showPractice = false } }
+            .onChange(of: coordinator.wakeCheck) { if $0 != nil { showSettings = false; showPractice = false } }
+            .sheet(isPresented: $showPractice) {
+                PracticeView()
+                    .environmentObject(coordinator)
+                    .environmentObject(store)
+            }
             .sheet(isPresented: $showSettings) {
                 SettingsView()
                     .environmentObject(coordinator)

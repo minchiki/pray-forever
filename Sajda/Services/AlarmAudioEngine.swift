@@ -73,6 +73,13 @@ final class AlarmAudioEngine {
         mode = .listening
     }
 
+    /// Конец тренировки чтения: микрофон больше не нужен.
+    func endListening() {
+        guard mode == .listening else { return }
+        mode = .idle
+        try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+    }
+
     func stopRinging(keepAlive: Bool) {
         guard mode == .ringing || mode == .listening else { return }
         volumeObservation = nil

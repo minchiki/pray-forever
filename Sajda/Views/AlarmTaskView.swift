@@ -18,7 +18,7 @@ struct AlarmTaskView: View {
     var body: some View {
         Group {
             if let surah = coordinator.recitation {
-                RecitationView(surah: surah, alarm: alarm)
+                RecitationView(surah: surah)
                     .transition(.opacity)
             } else {
                 photoTask

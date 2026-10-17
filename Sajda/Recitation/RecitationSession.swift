@@ -13,9 +13,11 @@ final class RecitationSession: ObservableObject {
     private var timer: Timer?
     private var lastTick = Date()
     private var finished = false
+    private let failsOnSilence: Bool
 
-    init(surah: Surah) {
+    init(surah: Surah, failsOnSilence: Bool = true) {
         tracker = RecitationTracker(surah: surah)
+        self.failsOnSilence = failsOnSilence
     }
 
     func start() {
@@ -42,7 +44,7 @@ final class RecitationSession: ObservableObject {
 
     /// Секунды до повторного звонка, если человек замолчал (nil — предупреждать рано).
     var silenceCountdown: Int? {
-        guard tracker.silentTime >= RecitationTracker.silenceWarning else { return nil }
+        guard failsOnSilence, tracker.silentTime >= RecitationTracker.silenceWarning else { return nil }
         return max(0, Int((RecitationTracker.silenceLimit - tracker.silentTime).rounded(.up)))
     }
 
@@ -68,7 +70,7 @@ final class RecitationSession: ObservableObject {
         let outcome: Outcome
         if tracker.isComplete {
             outcome = .completed
-        } else if tracker.isSilentTooLong {
+        } else if failsOnSilence, tracker.isSilentTooLong {
             outcome = .silent
         } else {
             return

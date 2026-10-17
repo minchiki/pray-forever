@@ -1,10 +1,17 @@
 import SwiftUI
 import UIKit
 
-/// Второй шаг задания: прочитать суру вслух. Арабский текст с подсветкой слов и транскрипция под ним.
+/// Кнопки экрана в режиме тренировки (без будильника).
+struct PracticeActions {
+    let close: () -> Void
+    let retry: () -> Void
+}
+
+/// Чтение суры вслух. Арабский текст с подсветкой слов и транскрипция под ним.
+/// Без `practice` — второй шаг задания будильника, с `practice` — тренировка.
 struct RecitationView: View {
     let surah: Surah
-    let alarm: AlarmInstance
+    let practice: PracticeActions?
 
     @EnvironmentObject private var coordinator: AlarmCoordinator
     @StateObject private var session: RecitationSession
@@ -12,10 +19,11 @@ struct RecitationView: View {
 
     private static let successDelay: UInt64 = 1_400_000_000
 
-    init(surah: Surah, alarm: AlarmInstance) {
+    init(surah: Surah, practice: PracticeActions? = nil) {
         self.surah = surah
-        self.alarm = alarm
-        _session = StateObject(wrappedValue: RecitationSession(surah: surah))
+        self.practice = practice
+        // На тренировке тишина не наказывается.
+        _session = StateObject(wrappedValue: RecitationSession(surah: surah, failsOnSilence: practice == nil))
     }
 
     private var tracker: RecitationTracker { session.tracker }
@@ -30,7 +38,12 @@ struct RecitationView: View {
                                       countdown: session.silenceCountdown,
                                       ayahText: ayahProgressText)
             }
-            if completed { successOverlay }
+            if let practice {
+                closeButton(practice.close)
+            }
+            if completed {
+                if let practice { practiceResult(practice) } else { successOverlay }
+            }
         }
         .statusBarHidden()
         .onAppear {
@@ -160,7 +173,68 @@ struct RecitationView: View {
         return text
     }
 
+    private func closeButton(_ action: @escaping () -> Void) -> some View {
+        VStack {
+            HStack {
+                Button(action: action) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(.white.opacity(0.8))
+                        .frame(width: 36, height: 36)
+                        .background(Circle().fill(Color.white.opacity(0.12)))
+                        .frame(width: 44, height: 44)
+                }
+                .accessibilityLabel(Text("practice.close"))
+                Spacer()
+            }
+            Spacer()
+        }
+        .padding(.horizontal, 8)
+    }
+
     // MARK: - Итог
+
+    private func practiceResult(_ practice: PracticeActions) -> some View {
+        let total = tracker.words.count
+        let recognized = total - tracker.skipped.count
+        return VStack(spacing: 16) {
+            Image(systemName: recognized == total ? "checkmark.seal.fill" : "checkmark.circle.fill")
+                .font(.system(size: 64))
+                .foregroundStyle(RecitationTheme.read)
+            Text("بَارَكَ اللَّهُ فِيكَ")
+                .font(RecitationTheme.arabic(30))
+                .foregroundStyle(RecitationTheme.gold)
+            Text(String(format: String(localized: "practice.result"), recognized, total))
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(.white)
+            if recognized < total {
+                Text("practice.result.hint")
+                    .font(.footnote)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.white.opacity(0.65))
+            }
+            VStack(spacing: 10) {
+                Button(action: practice.retry) {
+                    Label("practice.again", systemImage: "arrow.counterclockwise")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity, minHeight: 52)
+                }
+                .buttonStyle(.borderedProminent)
+                .buttonBorderShape(.roundedRectangle(radius: 16))
+                .tint(RecitationTheme.gold)
+                .foregroundStyle(.black)
+                Button("common.done", action: practice.close)
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity, minHeight: 48)
+            }
+            .padding(.top, 8)
+        }
+        .padding(32)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.black.opacity(0.8).ignoresSafeArea())
+        .transition(.opacity)
+    }
 
     private var successOverlay: some View {
         VStack(spacing: 16) {
@@ -184,6 +258,7 @@ struct RecitationView: View {
         case .completed:
             UINotificationFeedbackGenerator().notificationOccurred(.success)
             withAnimation { completed = true }
+            guard practice == nil else { return }
             Task {
                 try? await Task.sleep(nanoseconds: Self.successDelay)
                 coordinator.recitationCompleted()

@@ -262,6 +262,20 @@ final class AlarmCoordinator: ObservableObject {
         #endif
     }
 
+    // MARK: - Тренировка чтения
+
+    /// Микрофон без будильника. Если будильник зазвонит, он сам переключит звук.
+    func beginPractice() {
+        guard activeAlarm == nil else { return }
+        audio.beginListening()
+    }
+
+    func endPractice() {
+        guard activeAlarm == nil else { return }
+        audio.endListening()
+        refresh()
+    }
+
     func appEnteredBackground() {
         recitationFailed()
     }

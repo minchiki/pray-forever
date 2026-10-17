@@ -246,3 +246,12 @@
 "recitation.hint.speech" = "Words light up as you read";
 "recitation.hint.voice" = "Arabic recognition unavailable — your voice is counted";
 "recitation.hint.manual" = "Follow the highlight. Allow the microphone in Settings";
+
+/* Practice */
+"practice.title" = "Practice";
+"practice.footer" = "Recite a surah aloud and see how well the app hears you. No alarm, and pauses aren't penalized.";
+"practice.ayat" = "%d ayahs";
+"practice.result" = "Words recognized: %d of %d";
+"practice.result.hint" = "Orange words were counted by voice. Try reading a little louder and clearer.";
+"practice.again" = "Try again";
+"practice.close" = "Close";
