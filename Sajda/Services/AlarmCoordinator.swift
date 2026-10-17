@@ -268,12 +268,23 @@ final class AlarmCoordinator: ObservableObject {
     func beginPractice() {
         guard activeAlarm == nil else { return }
         audio.beginListening()
+        prepareRecitationModel()
     }
 
     func endPractice() {
         guard activeAlarm == nil else { return }
         audio.endListening()
+        unloadRecitationModel()
         refresh()
+    }
+
+    /// Модель распознавания Корана загружается заранее, пока человек делает фото.
+    func prepareRecitationModel() {
+        Task { _ = await QuranTranscriber.shared.prepare() }
+    }
+
+    private func unloadRecitationModel() {
+        Task { await QuranTranscriber.shared.unload() }
     }
 
     func appEnteredBackground() {
@@ -304,6 +315,7 @@ final class AlarmCoordinator: ObservableObject {
         store.ringingInstance = nil
         recitation = nil
         activeAlarm = nil
+        unloadRecitationModel()
         audio.stopRinging(keepAlive: false)
         UIApplication.shared.applicationIconBadgeNumber = 0
         Task { await notifications.clearAlarm(instanceID: instance.id) }

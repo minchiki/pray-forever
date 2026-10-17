@@ -258,3 +258,5 @@
 "recitation.heard" = "Heard:";
 "recitation.problem.unavailable" = "Arabic recognition is unavailable. Check your internet and turn on Dictation: Settings → General → Keyboard.";
 "recitation.problem.denied" = "Speech recognition is not allowed: Settings → Prayer → Speech Recognition.";
+"recitation.status.preparing" = "Preparing recognition…";
+"recitation.hint.preparing" = "Loading the Quran recitation model, up to 30 seconds the first time";

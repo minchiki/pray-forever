@@ -49,7 +49,10 @@ struct AlarmTaskView: View {
             if result?.isSuccess == true { successOverlay }
         }
         .statusBarHidden()
-        .onAppear { if coordinator.recitation == nil { camera.start() } }
+        .onAppear {
+            if coordinator.recitation == nil { camera.start() }
+            if store.settings.recitation != .off { coordinator.prepareRecitationModel() }
+        }
         .onDisappear { camera.stop() }
         .sheet(isPresented: $showEmergency) { emergencySheet }
     }

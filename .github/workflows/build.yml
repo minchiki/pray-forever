@@ -23,6 +23,15 @@ jobs:
           sudo xcode-select -s "$XCODE/Contents/Developer"
           xcodebuild -version
 
+      - name: Cache Quran speech model
+        uses: actions/cache@v4
+        with:
+          path: Sajda/Resources/QuranModel
+          key: quran-model-${{ hashFiles('scripts/fetch_quran_model.sh') }}
+
+      - name: Download Quran speech model (Tarteel whisper-base-ar-quran, Core ML)
+        run: bash scripts/fetch_quran_model.sh
+
       - name: Generate Xcode project
         run: |
           brew install xcodegen

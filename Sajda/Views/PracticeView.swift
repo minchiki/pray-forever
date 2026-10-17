@@ -49,9 +49,9 @@ private struct SurahRow: View {
             Text("\(surah.number)")
                 .font(.footnote.weight(.semibold))
                 .monospacedDigit()
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(RecitationTheme.accent)
                 .frame(width: 36, height: 36)
-                .background(Circle().fill(Color.accentColor.opacity(0.12)))
+                .background(Circle().fill(RecitationTheme.accent.opacity(0.12)))
             VStack(alignment: .leading, spacing: 2) {
                 Text(surah.localizedName)
                     .font(.body.weight(.medium))

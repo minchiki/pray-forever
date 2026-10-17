@@ -10,6 +10,9 @@ packages:
   Adhan:
     url: https://github.com/batoulapps/adhan-swift
     from: "1.3.0"
+  WhisperKit:
+    url: https://github.com/argmaxinc/WhisperKit
+    exactVersion: "1.1.1"
 
 settings:
   base:
@@ -25,8 +28,17 @@ targets:
     platform: iOS
     sources:
       - path: Sajda
+        excludes:
+          - "Resources/QuranModel/**"
+      # Модель Tarteel скачивается в CI; папкой, чтобы .mlmodelc попали в приложение как есть.
+      - path: Sajda/Resources/QuranModel
+        type: folder
+        buildPhase: resources
+        optional: true
     dependencies:
       - package: Adhan
+      - package: WhisperKit
+        product: WhisperKit
       - target: SajdaWidget
     settings:
       base:
