@@ -33,11 +33,17 @@ struct RecitationView: View {
             Theme.background.ignoresSafeArea()
             VStack(spacing: 0) {
                 header
+                // Панель закреплена снизу на своей подложке, а список прокручивается над ней и не залезает под неё.
                 ayatList
-                RecitationStatusPanel(listener: session.listener,
-                                      countdown: session.silenceCountdown,
-                                      ayahText: ayahProgressText,
-                                      showsDiagnostics: practice != nil)
+                    .safeAreaInset(edge: .bottom, spacing: 0) {
+                        RecitationStatusPanel(listener: session.listener,
+                                              countdown: session.silenceCountdown,
+                                              ayahText: ayahProgressText,
+                                              showsDiagnostics: practice != nil)
+                            .padding(.top, 8)
+                            .background(Theme.background.ignoresSafeArea(edges: .bottom))
+                            .overlay(alignment: .top) { Divider() }
+                    }
             }
             if completed {
                 resultScreen.transition(.opacity)
@@ -399,10 +405,11 @@ private struct RecitationStatusPanel: View {
                 Text("recitation.heard")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
-                Text(listener.transcript.isEmpty ? "—" : String(listener.transcript.suffix(80)))
-                    .font(RecitationTheme.arabic(17))
-                    .lineLimit(2)
-                    .multilineTextAlignment(.trailing)
+                // Системный шрифт и одна строка: панель не меняет высоту, видны последние услышанные слова.
+                Text(listener.transcript.isEmpty ? "—" : listener.transcript)
+                    .font(.system(size: 15))
+                    .lineLimit(1)
+                    .truncationMode(.head)
                     .frame(maxWidth: .infinity, alignment: .trailing)
             }
         }
