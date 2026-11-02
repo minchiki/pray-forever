@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Уязвимость
+    url: https://github.com/minchiki/pray-forever/security/advisories/new
+    about: Сообщите приватно, не в публичном issue
+  - name: Telegram-канал HUICODING
+    url: https://t.me/huicoding
+    about: Новости проекта и вопросы

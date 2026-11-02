@@ -1,0 +1,26 @@
+name: Идея
+description: Предложить новую возможность или улучшение
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Какую задачу это решает
+      placeholder: Хочу, чтобы будильник Фаджра звонил громче остальных, потому что…
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Как вы это видите
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Платформа
+      options: [Обе, Android, iOS]
+  - type: checkboxes
+    id: weakening
+    attributes:
+      label: Защита будильника
+      options:
+        - label: Идея не делает будильник проще выключить без испытания (иначе опишите, почему это нужно)

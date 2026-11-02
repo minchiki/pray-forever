@@ -1,0 +1,66 @@
+name: Release
+
+# Тег vX.Y.Z: проверка версии, сборка Android и iOS, GitHub Release с файлами и заметками из CHANGELOG.md.
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    name: Check version
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tag matches VERSION, project.yml and CHANGELOG.md
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          FILE=$(cat VERSION)
+          IOS=$(sed -nE 's/.*MARKETING_VERSION: "([^"]+)".*/\1/p' project.yml)
+          echo "tag=$TAG VERSION=$FILE project.yml=$IOS"
+          if [ "$TAG" != "$FILE" ] || [ "$TAG" != "$IOS" ]; then
+            echo "::error::Version mismatch"
+            exit 1
+          fi
+          if ! grep -q "^## \[$TAG\]" CHANGELOG.md; then
+            echo "::error::No CHANGELOG entry for $TAG"
+            exit 1
+          fi
+
+  android:
+    needs: version
+    uses: ./.github/workflows/android.yml
+    secrets: inherit
+
+  ios:
+    needs: version
+    uses: ./.github/workflows/ios.yml
+
+  publish:
+    name: Publish GitHub Release
+    needs: [android, ios]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Release notes from CHANGELOG.md
+        run: python3 scripts/release_notes.py "${GITHUB_REF_NAME#v}" > notes.md && cat notes.md
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ls -lh dist
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --title "Prayer $GITHUB_REF_NAME" \
+            --notes-file notes.md \
+            --verify-tag

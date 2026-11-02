@@ -1,0 +1,91 @@
+name: Android build
+
+# Релизные APK (по архитектурам) и AAB. Подписываются, если заданы секреты ключа,
+# иначе собираются неподписанными. Вызывается и из релиза по тегу.
+on:
+  push:
+    branches: [main]
+    paths:
+      - android/**
+      - Sajda/Resources/**
+      - Sajda/Recitation/Surah.swift
+      - VERSION
+      - .github/workflows/android.yml
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      ANDROID_KEYSTORE_BASE64:
+        required: false
+      ANDROID_KEYSTORE_PASSWORD:
+        required: false
+      ANDROID_KEY_ALIAS:
+        required: false
+      ANDROID_KEY_PASSWORD:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Release APK and AAB
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Restore signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.jks"
+            echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+            echo "Release will be signed"
+          else
+            echo "::warning::ANDROID_KEYSTORE_BASE64 is not set, release APK/AAB will be unsigned"
+          fi
+
+      - name: Build
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          ./gradlew assembleRelease
+          ./gradlew bundleRelease
+
+      - name: Collect artifacts
+        run: |
+          VERSION=$(cat ../VERSION)
+          mkdir -p ../dist
+          for apk in app/build/outputs/apk/release/*.apk; do
+            name=$(basename "$apk" .apk)
+            abi=${name#app-}
+            abi=${abi%-release-unsigned}
+            abi=${abi%-release}
+            case "$name" in *unsigned) suffix="-unsigned" ;; *) suffix="" ;; esac
+            cp "$apk" "../dist/Prayer-$VERSION-android-$abi$suffix.apk"
+          done
+          cp app/build/outputs/bundle/release/app-release.aab "../dist/Prayer-$VERSION-android.aab"
+          ls -lh ../dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-release
+          path: dist/
+          retention-days: 30
+
+      - name: Remove signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/release.jks"
