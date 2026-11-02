@@ -7,3 +7,25 @@ Payload/
 xcuserdata/
 .swiftpm/
 Sajda/Resources/QuranModel/
+
+# Android
+android/.gradle/
+android/.kotlin/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+*.iml
+captures/
+
+# Секреты: ключи подписи и локальные переменные окружения
+*.jks
+*.keystore
+*.p12
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
