@@ -109,13 +109,11 @@
 "settings.madhab" = "Asr time";
 "settings.location" = "Location";
 "settings.location.none" = "Not set";
-"settings.location.update" = "Update";
 "settings.offsets" = "Manual adjustment";
 "settings.section.alarm" = "Alarm";
 "settings.delay" = "Delay";
 "settings.alarmLimit.footer" = "Only one prayer's alarm can be turned off freely. Turning off more requires the challenge.";
 "settings.delay.footer" = "You get a notification when the prayer time begins. After the delay, the alarm starts at maximum volume.";
-"settings.volume" = "Volume";
 "settings.sound" = "Sound";
 "settings.sound.preview" = "Preview";
 "settings.notifyAtTime" = "Prayer time notification";
@@ -235,9 +233,6 @@
 "surah.kafirun" = "Al-Kafirun";
 "recitation.subtitle" = "Surah %d · %d ayahs";
 "recitation.ayah" = "Ayah %d of %d";
-"recitation.legend.read" = "read";
-"recitation.legend.skipped" = "not recognized";
-"recitation.legend.next" = "next";
 "recitation.silence" = "Keep reading aloud — the alarm returns in %d s";
 "recitation.status.starting" = "Starting the microphone…";
 "recitation.status.listening" = "Listening…";

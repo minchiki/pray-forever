@@ -109,13 +109,11 @@
 "settings.madhab" = "Время Асра";
 "settings.location" = "Местоположение";
 "settings.location.none" = "Не определено";
-"settings.location.update" = "Обновить";
 "settings.offsets" = "Ручная корректировка";
 "settings.section.alarm" = "Будильник";
 "settings.delay" = "Задержка";
 "settings.alarmLimit.footer" = "Без испытания можно выключить будильник только одного намаза. Чтобы выключить больше, пройдите испытание.";
 "settings.delay.footer" = "В момент наступления времени приходит уведомление. Через выбранную задержку включается сигнал на максимальной громкости.";
-"settings.volume" = "Громкость";
 "settings.sound" = "Звук";
 "settings.sound.preview" = "Прослушать";
 "settings.notifyAtTime" = "Уведомление о времени намаза";
@@ -235,9 +233,6 @@
 "surah.kafirun" = "Аль-Кяфирун";
 "recitation.subtitle" = "Сура %d · аятов: %d";
 "recitation.ayah" = "Аят %d из %d";
-"recitation.legend.read" = "прочитано";
-"recitation.legend.skipped" = "не распознано";
-"recitation.legend.next" = "дальше";
 "recitation.silence" = "Читайте вслух — сигнал включится через %d с";
 "recitation.status.starting" = "Включаю микрофон…";
 "recitation.status.listening" = "Слушаю…";
