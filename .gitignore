@@ -29,3 +29,6 @@ captures/
 # Python
 __pycache__/
 *.pyc
+
+# Шрифты для генерации баннеров (скачиваются скриптом)
+design/.fonts/
