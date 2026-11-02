@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Общие строки генерируются из Sajda/Resources/en.lproj/Localizable.strings (strings_shared.xml).
+    Здесь — только то, что есть лишь на Android, и переопределения формулировок про iOS.
+-->
+<resources>
+    <!-- Переопределения -->
+    <string name="common_openSettings">Open settings</string>
+    <string name="location_error_denied">No location access. Allow it in Android settings.</string>
+    <string name="camera_denied">No camera access. Allow it in Android settings to complete the task.</string>
+    <string name="settings_keepAlive_footer">Android may delay alarms to save battery. Turn this on and allow the app to run without battery restrictions.</string>
+    <string name="recitation_problem_unavailable">Arabic speech recognition is unavailable. Install Arabic for speech recognition in Android settings (Languages → Speech).</string>
+    <string name="recitation_problem_denied">No microphone access: Settings → Apps → Prayer → Permissions.</string>
+
+    <!-- Только Android -->
+    <string name="common_back">Back</string>
+    <string name="notif_channel_alarm">Alarm</string>
+    <string name="notif_channel_alarm_desc">Ringing alarm and the wake-up check</string>
+    <string name="notif_channel_prayer">Prayer times</string>
+    <string name="notif_channel_prayer_desc">Notification when a prayer time begins</string>
+    <string name="notif_channel_status">Status</string>
+    <string name="notif_channel_status_desc">Pause reminders</string>
+    <string name="notif_ringing_open">Open the task</string>
+
+    <string name="warn_title">The alarm may not ring</string>
+    <string name="warn_notifications">Notifications are off</string>
+    <string name="warn_exact">Alarms &amp; reminders are not allowed</string>
+    <string name="warn_fullscreen">Full-screen alarms are not allowed</string>
+    <string name="warn_battery">Battery optimization may delay the alarm</string>
+    <string name="warn_fix">Fix</string>
+
+    <string name="settings_section_about">About</string>
+    <string name="about_version">Version %s</string>
+    <string name="about_channel">Telegram channel HUICODING</string>
+    <string name="about_source">Source code on GitHub</string>
+
+    <string name="location_search_unavailable">City search is unavailable on this device. Enter coordinates instead.</string>
+    <string name="recitation_problem_busy">The microphone is busy. Close other apps that record audio.</string>
+    <string name="references_compare_unavailable">The photo is saved, but comparison with it is unavailable on this device.</string>
+</resources>

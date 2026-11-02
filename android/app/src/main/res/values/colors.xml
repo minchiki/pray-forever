@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Фон splash-экрана и адаптивной иконки — кремовый, как у иконки iOS. Палитра UI — в ui/theme/Theme.kt. -->
+    <color name="splash_background">#F1EBDD</color>
+    <color name="ic_launcher_background">#F1EBDD</color>
+</resources>

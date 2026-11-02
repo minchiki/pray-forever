@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Общие строки генерируются из Sajda/Resources/ru.lproj/Localizable.strings (strings_shared.xml).
+    Здесь — только то, что есть лишь на Android, и переопределения формулировок про iOS.
+-->
+<resources>
+    <!-- Переопределения -->
+    <string name="common_openSettings">Открыть настройки</string>
+    <string name="location_error_denied">Нет доступа к геолокации. Разрешите его в настройках Android.</string>
+    <string name="camera_denied">Нет доступа к камере. Разрешите его в настройках Android, чтобы выполнить задание.</string>
+    <string name="settings_keepAlive_footer">Android может откладывать будильники ради экономии батареи. Включите и разрешите приложению работать без ограничений батареи.</string>
+    <string name="recitation_problem_unavailable">Распознавание арабского недоступно. Установите арабский язык для распознавания речи в настройках Android (Языки → Речь).</string>
+    <string name="recitation_problem_denied">Нет доступа к микрофону: Настройки → Приложения → Prayer → Разрешения.</string>
+
+    <!-- Только Android -->
+    <string name="common_back">Назад</string>
+    <string name="notif_channel_alarm">Будильник</string>
+    <string name="notif_channel_alarm_desc">Звонящий будильник и проверка «не уснул»</string>
+    <string name="notif_channel_prayer">Время намаза</string>
+    <string name="notif_channel_prayer_desc">Уведомление о наступлении времени намаза</string>
+    <string name="notif_channel_status">Состояние</string>
+    <string name="notif_channel_status_desc">Напоминания о паузе</string>
+    <string name="notif_ringing_open">Открыть задание</string>
+
+    <string name="warn_title">Будильник может не зазвонить</string>
+    <string name="warn_notifications">Уведомления выключены</string>
+    <string name="warn_exact">Не разрешены будильники и напоминания</string>
+    <string name="warn_fullscreen">Не разрешены полноэкранные будильники</string>
+    <string name="warn_battery">Оптимизация батареи может задержать будильник</string>
+    <string name="warn_fix">Исправить</string>
+
+    <string name="settings_section_about">О приложении</string>
+    <string name="about_version">Версия %s</string>
+    <string name="about_channel">Telegram-канал HUICODING</string>
+    <string name="about_source">Исходный код на GitHub</string>
+
+    <string name="location_search_unavailable">Поиск городов недоступен на этом устройстве. Введите координаты.</string>
+    <string name="recitation_problem_busy">Микрофон занят. Закройте другие приложения, которые записывают звук.</string>
+    <string name="references_compare_unavailable">Фото сохранено, но сравнение с ним на этом устройстве недоступно.</string>
+</resources>
