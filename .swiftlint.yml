@@ -1,0 +1,40 @@
+included:
+  - Sajda
+  - SajdaWidget
+  - SajdaTests
+excluded:
+  - Sajda/Resources
+
+# Короткие имена (a, b, x, i) — математика и тесты; закрывающие запятые — стиль проекта.
+disabled_rules:
+  - identifier_name
+  - trailing_comma
+  - nesting
+  - todo
+
+opt_in_rules:
+  - empty_count
+  - first_where
+  - contains_over_first_not_nil
+  - redundant_nil_coalescing
+  - sorted_imports
+
+line_length:
+  warning: 160
+  error: 250
+  ignores_comments: true
+  ignores_urls: true
+type_body_length:
+  warning: 400
+  error: 600
+file_length:
+  warning: 600
+  error: 1000
+function_body_length:
+  warning: 80
+  error: 150
+cyclomatic_complexity:
+  warning: 15
+  error: 25
+
+reporter: github-actions-logging
