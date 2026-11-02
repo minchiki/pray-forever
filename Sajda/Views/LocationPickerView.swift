@@ -15,6 +15,7 @@ struct LocationPickerView: View {
     @State private var latitudeText = ""
     @State private var longitudeText = ""
     @State private var searchTask: Task<Void, Never>?
+    @State private var pendingChange: GuardedChange?
 
     private static let searchDebounce: UInt64 = 400_000_000
 
@@ -27,6 +28,7 @@ struct LocationPickerView: View {
         .navigationTitle(Text("settings.location"))
         .navigationBarTitleDisplayMode(.inline)
         .onAppear(perform: fillCoordinates)
+        .guardedChallenge($pendingChange)
     }
 
     // MARK: - Sections
@@ -44,8 +46,9 @@ struct LocationPickerView: View {
             }
             Button {
                 Task {
-                    await coordinator.updateLocation()
-                    fillCoordinates()
+                    if let current = await coordinator.locateCurrent() {
+                        apply(current, dismissAfter: false)
+                    }
                 }
             } label: {
                 HStack {
@@ -150,10 +153,19 @@ struct LocationPickerView: View {
         apply(SavedLocation(latitude: lat, longitude: lon, name: nil))
     }
 
-    private func apply(_ newLocation: SavedLocation) {
-        coordinator.locationError = nil
-        store.update { $0.location = newLocation }
-        dismiss()
+    /// Другое место сдвигает время намаза, поэтому рядом с будильником — только через испытание.
+    private func apply(_ newLocation: SavedLocation, dismissAfter: Bool = true) {
+        let proposed = store.settings.with { $0.location = newLocation }
+        let weakening = AlarmPolicy.weakens(proposed, comparedTo: store.settings)
+        coordinator.perform(weakening: weakening, pending: $pendingChange) {
+            coordinator.locationError = nil
+            store.update { $0.location = newLocation }
+            if dismissAfter {
+                dismiss()
+            } else {
+                fillCoordinates()
+            }
+        }
     }
 
     private func fillCoordinates() {

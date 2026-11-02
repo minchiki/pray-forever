@@ -25,19 +25,27 @@ struct SettingsView: View {
         .guardedChallenge($pendingChange)
     }
 
-    /// Ослабление будильника за час до звонка — только через испытание.
-    private func guarded(weakening: Bool, _ change: @escaping () -> Void) {
-        coordinator.perform(weakening: weakening, pending: $pendingChange, change)
+    /// Изменение настроек; ослабление будильника за час до звонка — только через испытание.
+    private func guardedUpdate(_ change: @escaping (inout AppSettings) -> Void) {
+        let weakening = AlarmPolicy.weakens(store.settings.with(change), comparedTo: store.settings)
+        coordinator.perform(weakening: weakening, pending: $pendingChange) { store.update(change) }
+    }
+
+    private func guardedBinding<Value>(_ keyPath: WritableKeyPath<AppSettings, Value>) -> Binding<Value> {
+        Binding(
+            get: { store.settings[keyPath: keyPath] },
+            set: { value in guardedUpdate { $0[keyPath: keyPath] = value } }
+        )
     }
 
     // MARK: - Время намаза
 
     private var timesSection: some View {
         Section {
-            Picker("settings.method", selection: $store.settings.method) {
+            Picker("settings.method", selection: guardedBinding(\.method)) {
                 ForEach(CalculationMethodOption.allCases) { Text($0.localizedName).tag($0) }
             }
-            Picker("settings.madhab", selection: $store.settings.madhab) {
+            Picker("settings.madhab", selection: guardedBinding(\.madhab)) {
                 ForEach(MadhabOption.allCases) { Text($0.localizedName).tag($0) }
             }
             NavigationLink {
@@ -75,7 +83,7 @@ struct SettingsView: View {
             ForEach(Prayer.allCases) { prayer in
                 Toggle(prayer.localizedName, isOn: alarmBinding(prayer))
             }
-            Stepper(value: delayBinding, in: AppSettings.delayRange) {
+            Stepper(value: guardedBinding(\.delayMinutes), in: AppSettings.delayRange) {
                 HStack {
                     Text("settings.delay")
                     Spacer()
@@ -106,22 +114,6 @@ struct SettingsView: View {
         )
     }
 
-    private var delayBinding: Binding<Int> {
-        Binding(
-            get: { store.settings.delayMinutes },
-            set: { value in
-                guarded(weakening: value > store.settings.delayMinutes) { store.update { $0.delayMinutes = value } }
-            }
-        )
-    }
-
-    private func protectedToggle(_ keyPath: WritableKeyPath<AppSettings, Bool>) -> Binding<Bool> {
-        Binding(
-            get: { store.settings[keyPath: keyPath] },
-            set: { value in guarded(weakening: !value) { store.update { $0[keyPath: keyPath] = value } } }
-        )
-    }
-
     // MARK: - Задание
 
     private var taskSection: some View {
@@ -136,7 +128,7 @@ struct SettingsView: View {
             } label: {
                 Text("settings.references")
             }
-            Picker("settings.recitation", selection: recitationBinding) {
+            Picker("settings.recitation", selection: guardedBinding(\.recitation)) {
                 ForEach(RecitationChoice.allCases) { Text($0.localizedName).tag($0) }
             }
         } header: {
@@ -149,23 +141,12 @@ struct SettingsView: View {
         }
     }
 
-    /// Отключить чтение суры — ослабление будильника.
-    private var recitationBinding: Binding<RecitationChoice> {
-        Binding(
-            get: { store.settings.recitation },
-            set: { value in
-                let weakening = value == .off && store.settings.recitation != .off
-                guarded(weakening: weakening) { store.update { $0.recitation = value } }
-            }
-        )
-    }
-
     // MARK: - Надёжность
 
     private var reliabilitySection: some View {
         Section {
-            Toggle("settings.keepAlive", isOn: protectedToggle(\.keepAlive))
-            Toggle("settings.wakeCheck", isOn: protectedToggle(\.wakeCheck))
+            Toggle("settings.keepAlive", isOn: guardedBinding(\.keepAlive))
+            Toggle("settings.wakeCheck", isOn: guardedBinding(\.wakeCheck))
             NavigationLink {
                 PauseView()
                     .environmentObject(coordinator)

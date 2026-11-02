@@ -348,16 +348,23 @@ final class AlarmCoordinator: ObservableObject {
     }
 
     func updateLocation() async {
+        guard let loc = await locateCurrent() else { return }
+        store.update { $0.location = loc }
+        refresh()
+    }
+
+    /// Определяет текущее место, но не сохраняет его: смену места рядом с будильником проверяет вызывающий.
+    func locateCurrent() async -> SavedLocation? {
         do {
             let loc = try await location.currentLocation()
             locationError = nil
-            store.update { $0.location = loc }
-            refresh()
+            return loc
         } catch LocationService.Failure.denied {
             locationError = String(localized: "location.error.denied")
         } catch {
             locationError = String(localized: "location.error.generic")
         }
+        return nil
     }
 
     // MARK: - Фоновое обновление

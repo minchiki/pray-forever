@@ -78,6 +78,36 @@ final class AlarmPolicyTests: XCTestCase {
         XCTAssertFalse(AlarmPolicy.disablingNeedsChallenge(.fajr, settings: settings))
     }
 
+    func testShiftingPrayerTimesWeakensAlarm() {
+        let base = AppSettings().with { $0.location = SavedLocation(latitude: 55.79, longitude: 49.11, name: "Kazan") }
+
+        XCTAssertTrue(AlarmPolicy.weakens(base.with { $0.madhab = .shafi }, comparedTo: base))
+        XCTAssertTrue(AlarmPolicy.weakens(base.with { $0.method = .turkey }, comparedTo: base))
+        XCTAssertTrue(AlarmPolicy.weakens(base.with { $0.offsetMinutes[Prayer.fajr.rawValue] = -5 }, comparedTo: base))
+        XCTAssertTrue(AlarmPolicy.weakens(base.with { $0.location = SavedLocation(latitude: 43.1, longitude: 131.9, name: nil) },
+                                          comparedTo: base))
+    }
+
+    func testFirstLocationIsNotWeakening() {
+        let located = AppSettings().with { $0.location = SavedLocation(latitude: 55.79, longitude: 49.11, name: nil) }
+
+        XCTAssertFalse(AlarmPolicy.weakens(located, comparedTo: AppSettings()))
+    }
+
+    func testOnlyLooseningChangesWeakenAlarm() {
+        let base = AppSettings()
+
+        XCTAssertTrue(AlarmPolicy.weakens(base.with { $0.delayMinutes += 1 }, comparedTo: base))
+        XCTAssertFalse(AlarmPolicy.weakens(base.with { $0.delayMinutes -= 1 }, comparedTo: base))
+        XCTAssertTrue(AlarmPolicy.weakens(base.with { $0.alarmEnabled[Prayer.isha.rawValue] = false }, comparedTo: base))
+        XCTAssertTrue(AlarmPolicy.weakens(base.with { $0.recitation = .off }, comparedTo: base))
+        XCTAssertFalse(AlarmPolicy.weakens(base.with { $0.recitation = .random }, comparedTo: base))
+        XCTAssertTrue(AlarmPolicy.weakens(base.with { $0.keepAlive = false }, comparedTo: base))
+        XCTAssertTrue(AlarmPolicy.weakens(base.with { $0.wakeCheck = false }, comparedTo: base))
+        XCTAssertFalse(AlarmPolicy.weakens(base.with { $0.sound = .siren }, comparedTo: base))
+        XCTAssertFalse(AlarmPolicy.weakens(base.with { $0.task = .rug }, comparedTo: base))
+    }
+
     func testChangesLockedWithinHourBeforeAlarm() {
         XCTAssertTrue(AlarmPolicy.changesLocked(instances: [instance("a", alarmInMinutes: 30)],
                                                 dismissed: [], isRinging: false, now: now))

@@ -69,6 +69,21 @@ enum AlarmPolicy {
 
     // MARK: - Блокировка ослабления настроек
 
+    /// true, если новые настройки позволяют будильнику зазвонить позже или выключиться проще.
+    /// Метод расчёта, мазхаб, место и поправки сдвигают время намаза — их смена всегда считается ослаблением.
+    static func weakens(_ new: AppSettings, comparedTo old: AppSettings) -> Bool {
+        if new.method != old.method || new.madhab != old.madhab || new.offsetMinutes != old.offsetMinutes {
+            return true
+        }
+        if old.location != nil, new.location != old.location { return true }
+        if new.delayMinutes > old.delayMinutes { return true }
+        if Prayer.allCases.contains(where: { old.isAlarmEnabled($0) && !new.isAlarmEnabled($0) }) { return true }
+        if new.recitation == .off, old.recitation != .off { return true }
+        if old.keepAlive && !new.keepAlive { return true }
+        if old.wakeCheck && !new.wakeCheck { return true }
+        return false
+    }
+
     /// true, если звонит будильник или до ближайшего меньше часа.
     static func changesLocked(instances: [AlarmInstance], dismissed: Set<String>,
                               isRinging: Bool, now: Date) -> Bool {
