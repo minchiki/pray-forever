@@ -14,7 +14,7 @@
 • Выключить раньше — только через испытание из 10 раундов
 • iOS и Android, без рекламы и аккаунтов
 
-<a href="https://github.com/minchiki/pray-forever">GitHub</a> · <a href="https://github.com/minchiki/pray-forever/releases/tag/v1.0.0">Релиз 1.0.0</a> · <a href="https://t.me/huicoding">HUICODING</a>
+<a href="https://github.com/minchiki/pray-forever">GitHub</a> · <a href="https://github.com/minchiki/pray-forever/releases/tag/v1.0.1">Релиз 1.0.1</a> · <a href="https://t.me/huicoding">HUICODING</a>
 
 #Prayer #намаз #Android #iOS #opensource
 <!-- caption:end -->
