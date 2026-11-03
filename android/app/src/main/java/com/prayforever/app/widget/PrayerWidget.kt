@@ -125,9 +125,9 @@ class PrayerWidget : GlanceAppWidget() {
     }
 
     private object Palette {
-        val background = ColorProvider(day = Color(0xFFF1EBDD), night = Color(0xFF13201A))
-        val text = ColorProvider(day = Color(0xFF10251C), night = Color(0xFFF1EBDD))
-        val secondary = ColorProvider(day = Color(0xFF5B6B63), night = Color(0xFFA9B5AE))
+        val background = ColorProvider(day = Color.White, night = Color(0xFF1C1C1E))
+        val text = ColorProvider(day = Color.Black, night = Color.White)
+        val secondary = ColorProvider(day = Color(0xFF6C6C70), night = Color(0xFF98989D))
         val accent = ColorProvider(day = Color(0xFF1D6347), night = Color(0xFF5FBF92))
     }
 

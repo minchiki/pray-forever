@@ -47,7 +47,6 @@ import androidx.compose.ui.unit.sp
 import com.prayforever.app.R
 import com.prayforever.app.alarm.AlarmController
 import com.prayforever.app.core.RecitationChoice
-import com.prayforever.app.ui.theme.Brand
 
 @Composable
 fun OnboardingScreen() {
@@ -80,9 +79,11 @@ fun OnboardingScreen() {
             verticalArrangement = Arrangement.spacedBy(28.dp),
         ) {
             Spacer(Modifier.size(12.dp))
-            Surface(shape = RoundedCornerShape(22.dp), color = Brand.Cream, modifier = Modifier.size(96.dp)) {
-                Image(painterResource(R.mipmap.ic_launcher_foreground), contentDescription = null, modifier = Modifier.clip(RoundedCornerShape(22.dp)))
-            }
+            Image(
+                painterResource(R.drawable.rug_mark),
+                contentDescription = null,
+                modifier = Modifier.size(88.dp).clip(RoundedCornerShape(20.dp)),
+            )
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(stringResource(R.string.app_name), fontSize = 40.sp, fontWeight = FontWeight.Bold)
                 Text(

@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+## [1.0.1] — 2026-11-03
+
+### Changed
+
+- Android: оформление приведено к оригинальному дизайну iOS — светлый и тёмный системные фоны, белые и графитовые карточки, зелёный акцент `#1D6347`, иконка-коврик на онбординге.
+- Баннер, логотип и social preview переделаны под иконку приложения (коврик на кремовом фоне) и карточку расписания с главного экрана.
+
 ## [1.0.0] — 2026-11-03
 
 Первый публичный релиз: iOS и Android.
@@ -33,5 +40,6 @@
 
 Версии до первого релиза: время намаза, будильник с цепочкой уведомлений и AlarmKit, задание с камерой, чтение суры моделью Tarteel, виджеты, пауза и защита от обхода.
 
-[Unreleased]: https://github.com/minchiki/pray-forever/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/minchiki/pray-forever/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/minchiki/pray-forever/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/minchiki/pray-forever/releases/tag/v1.0.0

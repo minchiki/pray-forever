@@ -12,59 +12,57 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 
-/** Палитра из иконки: зелень михраба, золото орнамента, кремовый фон, красный коврика. */
+/** Палитра оригинального iOS-дизайна: AccentColor, системные светлые и тёмные фоны. */
 object Brand {
     val Green = Color(0xFF1D6347)
     val GreenLight = Color(0xFF5FBF92)
     val Gold = Color(0xFFC9A95C)
     val Cream = Color(0xFFF1EBDD)
-    val Ink = Color(0xFF10251C)
-    val Night = Color(0xFF0E1A15)
-    val NightCard = Color(0xFF17261F)
     val Ruby = Color(0xFFB3261E)
 
-    /** Прочитанные слова и прогресс чтения. */
+    /** Прочитанные слова и прогресс чтения (в iOS — синий акцент чтения). */
     val Read = Color(0xFF2E7D5B)
     val Skipped = Color(0xFFE08A1E)
 }
 
+// systemGroupedBackground / secondarySystemGroupedBackground из iOS.
 private val LightColors =
     lightColorScheme(
         primary = Brand.Green,
         onPrimary = Color.White,
         primaryContainer = Color(0xFFD5E8DC),
-        onPrimaryContainer = Brand.Ink,
+        onPrimaryContainer = Color(0xFF10251C),
         secondary = Color(0xFF8A6D2B),
         secondaryContainer = Color(0xFFF2E6C6),
-        background = Color(0xFFF6F2E8),
-        onBackground = Brand.Ink,
-        surface = Color(0xFFF6F2E8),
-        onSurface = Brand.Ink,
+        background = Color(0xFFF2F2F7),
+        onBackground = Color.Black,
+        surface = Color(0xFFF2F2F7),
+        onSurface = Color.Black,
         surfaceContainer = Color.White,
-        surfaceContainerHigh = Color(0xFFFFFDF8),
-        surfaceVariant = Color(0xFFE9E3D4),
-        onSurfaceVariant = Color(0xFF5B6B63),
-        outlineVariant = Color(0xFFDDD5C3),
+        surfaceContainerHigh = Color.White,
+        surfaceVariant = Color(0xFFE5E5EA),
+        onSurfaceVariant = Color(0xFF6C6C70),
+        outlineVariant = Color(0xFFD1D1D6),
         error = Brand.Ruby,
     )
 
 private val DarkColors =
     darkColorScheme(
         primary = Brand.GreenLight,
-        onPrimary = Brand.Night,
+        onPrimary = Color.Black,
         primaryContainer = Color(0xFF1E4A38),
         onPrimaryContainer = Color(0xFFD5E8DC),
         secondary = Brand.Gold,
         secondaryContainer = Color(0xFF4A3D1E),
-        background = Brand.Night,
-        onBackground = Brand.Cream,
-        surface = Brand.Night,
-        onSurface = Brand.Cream,
-        surfaceContainer = Brand.NightCard,
-        surfaceContainerHigh = Color(0xFF1C2D25),
-        surfaceVariant = Color(0xFF22332B),
-        onSurfaceVariant = Color(0xFFA9B5AE),
-        outlineVariant = Color(0xFF2C3E35),
+        background = Color.Black,
+        onBackground = Color.White,
+        surface = Color.Black,
+        onSurface = Color.White,
+        surfaceContainer = Color(0xFF1C1C1E),
+        surfaceContainerHigh = Color(0xFF2C2C2E),
+        surfaceVariant = Color(0xFF2C2C2E),
+        onSurfaceVariant = Color(0xFF98989D),
+        outlineVariant = Color(0xFF38383A),
         error = Color(0xFFF2B8B5),
     )
 
