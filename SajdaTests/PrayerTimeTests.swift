@@ -58,7 +58,7 @@ final class PrayerTimeTests: XCTestCase {
 
 final class AppSettingsTests: XCTestCase {
     func testDecodingOldDataFallsBackToDefaults() throws {
-        let json = #"{"delayMinutes": 12, "method": "unknownMethod"}"#.data(using: .utf8)!
+        let json = Data(#"{"delayMinutes": 12, "method": "unknownMethod"}"#.utf8)
 
         let settings = try JSONDecoder().decode(AppSettings.self, from: json)
 

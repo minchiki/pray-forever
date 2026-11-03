@@ -295,7 +295,7 @@ final class AlarmCoordinator: ObservableObject {
     func completeTask() {
         guard let active = activeAlarm else { return }
         if store.settings.wakeCheck, let check = AlarmPolicy.wakeCheck(after: active, completedAt: Date()) {
-            store.wakeChecks = store.wakeChecks + [check]
+            store.wakeChecks += [check]
         }
         finish(active, markDismissed: true)
     }

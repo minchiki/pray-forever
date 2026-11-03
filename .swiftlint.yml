@@ -17,7 +17,6 @@ opt_in_rules:
   - first_where
   - contains_over_first_not_nil
   - redundant_nil_coalescing
-  - sorted_imports
 
 line_length:
   warning: 160

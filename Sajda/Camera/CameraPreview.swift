@@ -14,7 +14,7 @@ struct CameraPreview: UIViewRepresentable {
     func updateUIView(_ uiView: PreviewView, context: Context) {}
 
     final class PreviewView: UIView {
-        override class var layerClass: AnyClass { AVCaptureVideoPreviewLayer.self }
+        override static var layerClass: AnyClass { AVCaptureVideoPreviewLayer.self }
         var previewLayer: AVCaptureVideoPreviewLayer {
             // layerClass гарантирует тип слоя.
             layer as! AVCaptureVideoPreviewLayer // swiftlint:disable:this force_cast

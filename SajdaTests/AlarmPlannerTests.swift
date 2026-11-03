@@ -25,7 +25,7 @@ final class AlarmPlannerTests: XCTestCase {
         let plan = AlarmPlanner().plan(instances: [item], active: nil, dismissed: [], notifyAtPrayerTime: true, now: now)
         let alarms = plan.filter { $0.kind == .alarm }
 
-        XCTAssertEqual(plan.filter { $0.kind == .prayerTime }.first?.fireDate, item.prayerTime)
+        XCTAssertEqual(plan.first { $0.kind == .prayerTime }?.fireDate, item.prayerTime)
         XCTAssertEqual(alarms.count, AlarmPlanner.chainLength)
         XCTAssertEqual(alarms.first?.fireDate, item.alarmTime)
         XCTAssertEqual(alarms[1].fireDate.timeIntervalSince(alarms[0].fireDate), AlarmPlanner.chainInterval, accuracy: 0.001)
