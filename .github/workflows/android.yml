@@ -80,7 +80,7 @@ jobs:
           cp app/build/outputs/bundle/release/app-release.aab "../dist/Prayer-$VERSION-android.aab"
           ls -lh ../dist
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: android-release
           path: dist/
