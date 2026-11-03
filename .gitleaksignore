@@ -1,0 +1,2 @@
+# Ложное срабатывание: имя ключа SharedPreferences ("sajda.emergency.v1"), а не секрет.
+406a63e53a2da603f3ca71e0c660f5c2d748cab0:android/app/src/main/java/com/prayforever/app/data/SettingsStore.kt:generic-api-key:108
