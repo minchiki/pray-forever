@@ -28,7 +28,7 @@ jobs:
           swiftlint lint
 
       - name: Cache Quran speech model
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: Sajda/Resources/QuranModel
           key: quran-model-${{ hashFiles('scripts/fetch_quran_model.sh') }}
