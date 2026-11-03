@@ -1,7 +1,6 @@
 import java.io.File
 import java.net.URI
 import java.security.MessageDigest
-import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -22,17 +21,25 @@ val appVersionCode: Int =
     }
 
 // Секреты подписи: переменные окружения, локально — ещё и файл .env в корне репозитория (он в .gitignore).
-val dotEnv =
-    Properties().apply {
-        File(repoRoot, ".env").takeIf { it.isFile }?.reader()?.use { load(it) }
-    }
+// .env читается построчно, без Properties: там обратный слэш — экранирование и ломает пути Windows.
+val dotEnv: Map<String, String> =
+    File(repoRoot, ".env")
+        .takeIf { it.isFile }
+        ?.readLines()
+        ?.map { it.trim() }
+        ?.filter { it.isNotEmpty() && !it.startsWith("#") && "=" in it }
+        ?.associate { it.substringBefore('=').trim() to it.substringAfter('=').trim() }
+        .orEmpty()
 
-fun secret(name: String): String? = (System.getenv(name) ?: dotEnv.getProperty(name))?.trim()?.takeIf { it.isNotEmpty() }
+fun secret(name: String): String? = (System.getenv(name) ?: dotEnv[name])?.trim()?.takeIf { it.isNotEmpty() }
 
 val keystorePath = secret("ANDROID_KEYSTORE_PATH")
 val hasReleaseSigning =
     keystorePath != null && File(keystorePath).isFile &&
         listOf("ANDROID_KEYSTORE_PASSWORD", "ANDROID_KEY_ALIAS", "ANDROID_KEY_PASSWORD").all { secret(it) != null }
+if (!hasReleaseSigning) {
+    logger.warn("Release signing is not configured (ANDROID_KEYSTORE_*): release APK/AAB will be unsigned")
+}
 
 android {
     namespace = "com.prayforever.app"

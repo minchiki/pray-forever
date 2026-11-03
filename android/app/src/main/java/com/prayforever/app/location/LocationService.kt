@@ -36,10 +36,10 @@ object LocationService {
         data object Unavailable : Result
     }
 
-    /** Общее время ожидания свежих координат: дольше ждать нет смысла, есть ручной выбор места. */
     /** LocationManager.FUSED_PROVIDER появился в API 31; на старых версиях такого провайдера просто нет. */
     private const val FUSED_PROVIDER = "fused"
 
+    /** Общее время ожидания свежих координат: дольше ждать нет смысла, есть ручной выбор места. */
     private const val TIMEOUT_MILLIS = 15_000L
     private const val FRESH_ENOUGH_MILLIS = 30 * 60_000L
 
